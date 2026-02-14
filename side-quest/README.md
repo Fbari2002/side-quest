@@ -73,6 +73,10 @@ Reliability: structured output schema, then parse+retry once, then safe fallback
 
 ## Deploying to Vercel
 
-- Add `OPENAI_API_KEY` in Vercel Project Settings -> Environment Variables.
+- Add `OPENAI_API_KEY` in Vercel Project Settings -> Environment Variables (required in production).
 - Optionally set `OPENAI_MODEL`.
 - Redeploy after setting env vars.
+
+## iOS icon refresh note
+
+iOS caches Home Screen icons aggressively; remove the old shortcut and add it again from Safari to refresh.

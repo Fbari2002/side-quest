@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   title: "SideQuest",
   description: "Main Character Mode micro-adventures",
   manifest: "/manifest.webmanifest",
-  icons: {
-    icon: "/icon.png",
-    apple: "/apple-touch-icon.png",
-  },
 };
 
 export const viewport: Viewport = {
