@@ -39,6 +39,9 @@ export default function QuestPage() {
   const [form, setForm] = React.useState<FormState>(initialForm);
   const [quest, setQuest] = React.useState<Quest | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [isRemixing, setIsRemixing] = React.useState(false);
+  const [showOnboarding, setShowOnboarding] = React.useState(true);
+  const [questVersion, setQuestVersion] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
   const moodInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -66,15 +69,16 @@ export default function QuestPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await submitQuest();
+    await submitQuest("generate");
   }
 
-  async function submitQuest() {
+  async function submitQuest(mode: "generate" | "remix" = "generate") {
     const requestAt = new Date().toISOString();
     if (process.env.NODE_ENV !== "production") {
-      console.info(`[quest] submit clicked at ${requestAt}`);
+      console.info(`[quest] ${mode} clicked at ${requestAt}`);
     }
 
+    setIsRemixing(mode === "remix");
     setLoading(true);
     setError(null);
 
@@ -100,6 +104,8 @@ export default function QuestPage() {
       }
 
       setQuest(data);
+      setQuestVersion((value) => value + 1);
+      if (showOnboarding) setShowOnboarding(false);
       if (process.env.NODE_ENV !== "production") {
         console.info(
           `[quest] response ${requestId ?? "n/a"} path=${generationPath ?? "n/a"} title: ${data.title}`,
@@ -110,6 +116,7 @@ export default function QuestPage() {
       const message = err instanceof Error ? err.message : "Something went wrong.";
       setError(message);
     } finally {
+      setIsRemixing(false);
       setLoading(false);
     }
   }
@@ -161,6 +168,11 @@ export default function QuestPage() {
         <p className="mt-2 text-sm text-[var(--muted)]">
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
+        {showOnboarding && (
+          <p className="mt-2 rounded-2xl border border-[var(--line)] bg-[#0d1426]/70 px-3 py-2 text-sm text-[var(--text)]">
+            Tell us how you&apos;re feeling - we&apos;ll tailor a micro-adventure for you.
+          </p>
+        )}
         <p aria-live="polite" className="sr-only">
           {announceText}
         </p>
@@ -261,7 +273,7 @@ export default function QuestPage() {
               <div className="mt-2 flex gap-3 text-xs">
                 <button
                   type="button"
-                  onClick={submitQuest}
+                  onClick={() => submitQuest("generate")}
                   disabled={loading}
                   className="rounded-full border border-[var(--line)] px-3 py-1 text-[var(--text)] transition hover:border-[var(--accent)] disabled:opacity-60"
                 >
@@ -284,7 +296,11 @@ export default function QuestPage() {
       </section>
 
       {quest && (
-        <section className="main-card result-reveal rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+        <section
+          key={questVersion}
+          aria-live="polite"
+          className="main-card result-reveal rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+        >
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
           <h2 className="mt-2 text-2xl font-semibold leading-tight">{quest.title}</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">{quest.vibe}</p>
@@ -304,23 +320,41 @@ export default function QuestPage() {
 
           <div className="mt-5 grid grid-cols-2 gap-3">
             <a
-              className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)]"
+              className={`inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)] ${
+                loading ? "pointer-events-none opacity-60" : ""
+              }`}
               href={spotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => showToast("Opening Spotify…")}
+              onClick={() => {
+                if (loading) return;
+                showToast("Opening Spotify…");
+              }}
+              aria-disabled={loading}
             >
               🎧 Play the vibe
             </a>
             <button
               type="button"
               onClick={onShareQuest}
+              disabled={loading}
               className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--warm)]"
             >
               Share quest
             </button>
           </div>
         </section>
+      )}
+
+      {quest && (
+        <button
+          type="button"
+          onClick={() => submitQuest("remix")}
+          disabled={loading}
+          className="main-card rounded-2xl px-4 py-3 text-sm font-semibold transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isRemixing ? "Remixing..." : "🔄 Remix"}
+        </button>
       )}
 
       {toastMessage && (

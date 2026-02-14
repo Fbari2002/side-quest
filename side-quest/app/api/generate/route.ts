@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import offlineQuestCatalog from "@/app/lib/offline-quests.json";
+import offlineQuestCatalog from "@/lib/offline-quests.json";
+import { selectOfflineQuest } from "@/lib/questHelpers";
+
 export const dynamic = "force-dynamic";
 
 type Energy = "low" | "medium" | "high";
@@ -31,7 +33,7 @@ type OfflineQuest = Quest & {
 
 const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const offlineQuests = offlineQuestCatalog as OfflineQuest[];
-let lastOfflineTitle: string | null = null;
+const recentTitles: string[] = [];
 
 const questSchema = {
   type: "object",
@@ -42,6 +44,8 @@ const questSchema = {
     steps: {
       type: "array",
       items: { type: "string" },
+      minItems: 3,
+      maxItems: 3,
     },
     twist: { type: "string" },
     completion: { type: "string" },
@@ -56,17 +60,9 @@ export async function POST(req: Request) {
   const isDev = process.env.NODE_ENV !== "production";
 
   try {
-    if (isDev) {
-      console.info(`[/api/generate][${requestId}] request received`);
-      console.info(`[/api/generate][${requestId}] OPENAI_API_KEY present: ${Boolean(process.env.OPENAI_API_KEY)}`);
-    }
-
     const input = (await req.json()) as GenerateInput;
     const validationError = validateInput(input);
     if (validationError) {
-      if (isDev) {
-        console.warn(`[/api/generate][${requestId}] validation failed: ${validationError}`);
-      }
       headers.set("X-Generation-Path", "validation-error");
       return NextResponse.json({ error: validationError }, { status: 400, headers });
     }
@@ -74,33 +70,26 @@ export async function POST(req: Request) {
     if (!process.env.OPENAI_API_KEY) {
       if (process.env.NODE_ENV === "production") {
         headers.set("X-Generation-Path", "missing-key");
-        return NextResponse.json(
-          { error: "Server misconfigured: missing OPENAI_API_KEY" },
-          { status: 500, headers },
-        );
+        return NextResponse.json({ error: "error" }, { status: 500, headers });
       }
 
-      if (isDev) {
-        console.warn(`[/api/generate][${requestId}] missing OPENAI_API_KEY in development; using offline fallback.`);
-      }
-      const selected = selectOfflineFallback(input, requestId);
+      const quest = selectOfflineFallback(input, requestId, "missing-api-key");
+      rememberTitle(quest.title);
       headers.set("X-Generation-Path", "offline-fallback-missing-key");
-      return NextResponse.json(selected.quest, { headers });
+      return NextResponse.json(quest, { headers });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const result = await generateQuest(openai, input, requestId);
+    rememberTitle(result.quest.title);
+
     if (isDev) {
-      console.info(
-        `[/api/generate][${requestId}] generation path: ${result.path}; primaryParsed=${result.debug.primaryParsed}; primaryRawLen=${result.debug.primaryRawLength}; repairParsed=${result.debug.repairParsed}; repairRawLen=${result.debug.repairRawLength}`,
-      );
+      console.info(`[/api/generate][${requestId}] generation path: ${result.path}`);
     }
+
     headers.set("X-Generation-Path", result.path);
     return NextResponse.json(result.quest, { headers });
   } catch {
-    if (isDev) {
-      console.error(`[/api/generate][${requestId}] request failed during parsing/handling`);
-    }
     return NextResponse.json({ error: "Invalid request." }, { status: 400, headers });
   }
 }
@@ -117,16 +106,11 @@ function validateInput(input: GenerateInput): string | null {
   return null;
 }
 
-async function generateQuest(openai: OpenAI, input: GenerateInput, requestId: string): Promise<{
-  quest: Quest;
-  path: "primary" | "repair" | "fallback";
-  debug: {
-    primaryParsed: boolean;
-    primaryRawLength: number;
-    repairParsed: boolean;
-    repairRawLength: number;
-  };
-}> {
+async function generateQuest(
+  openai: OpenAI,
+  input: GenerateInput,
+  requestId: string,
+): Promise<{ quest: Quest; path: "primary" | "repair" | "fallback" }> {
   const firstAttempt = await createStructuredQuest(
     openai,
     generationPrompt(input, requestId),
@@ -134,16 +118,7 @@ async function generateQuest(openai: OpenAI, input: GenerateInput, requestId: st
     "primary",
   );
   if (firstAttempt.quest) {
-    return {
-      quest: firstAttempt.quest,
-      path: "primary",
-      debug: {
-        primaryParsed: true,
-        primaryRawLength: firstAttempt.raw.length,
-        repairParsed: false,
-        repairRawLength: 0,
-      },
-    };
+    return { quest: firstAttempt.quest, path: "primary" };
   }
 
   const secondAttempt = await createStructuredQuest(
@@ -153,27 +128,12 @@ async function generateQuest(openai: OpenAI, input: GenerateInput, requestId: st
     "repair",
   );
   if (secondAttempt.quest) {
-    return {
-      quest: secondAttempt.quest,
-      path: "repair",
-      debug: {
-        primaryParsed: false,
-        primaryRawLength: firstAttempt.raw.length,
-        repairParsed: true,
-        repairRawLength: secondAttempt.raw.length,
-      },
-    };
+    return { quest: secondAttempt.quest, path: "repair" };
   }
 
   return {
-    quest: selectOfflineFallback(input, requestId).quest,
+    quest: selectOfflineFallback(input, requestId, "openai-failure-or-parse"),
     path: "fallback",
-    debug: {
-      primaryParsed: false,
-      primaryRawLength: firstAttempt.raw.length,
-      repairParsed: false,
-      repairRawLength: secondAttempt.raw.length,
-    },
   };
 }
 
@@ -184,6 +144,7 @@ async function createStructuredQuest(
   phase: "primary" | "repair",
 ): Promise<{ quest: Quest | null; raw: string }> {
   const isDev = process.env.NODE_ENV !== "production";
+
   try {
     const response = await openai.responses.create({
       model,
@@ -199,8 +160,7 @@ async function createStructuredQuest(
       input: [
         {
           role: "system",
-          content:
-            "You generate safe, legal SideQuest adventures. Output must match schema and be concise.",
+          content: "You generate safe, legal SideQuest adventures. Output must match schema and be concise.",
         },
         { role: "user", content: prompt },
       ],
@@ -208,25 +168,17 @@ async function createStructuredQuest(
 
     const raw =
       (response.output_text || extractTextFromOutput(response.output as unknown[]) || "").trim();
-    if (isDev) {
-      const outputCount = Array.isArray(response.output) ? response.output.length : 0;
-      console.info(
-        `[/api/generate][${requestId}] ${phase} response received: rawLen=${raw.length}; outputItems=${outputCount}`,
-      );
-    }
     const parsed = parseQuest(raw);
+
     if (isDev && !parsed) {
-      console.warn(
-        `[/api/generate][${requestId}] ${phase} parse failed. Raw output: ${
-          raw ? raw.slice(0, 500) : "(empty)"
-        }`,
-      );
+      console.warn(`[/api/generate][${requestId}] ${phase} parse failed.`);
     }
+
     return { quest: parsed, raw };
   } catch (error) {
     if (isDev) {
       const message = error instanceof Error ? error.message : "Unknown OpenAI error";
-      console.error(`[/api/generate][${requestId}] ${phase} structured generation failed: ${message}`);
+      console.warn(`[/api/generate][${requestId}] ${phase} failed; falling back. ${message}`);
     }
     return { quest: null, raw: "" };
   }
@@ -281,9 +233,7 @@ function normalizeQuest(value: Partial<Quest>): Quest | null {
     ? value.steps.map((step) => (typeof step === "string" ? step.trim() : "")).filter(Boolean)
     : [];
 
-  const steps = baseSteps
-    .filter((step) => step.split(/\s+/).length < 20)
-    .slice(0, 3);
+  const steps = baseSteps.filter((step) => step.split(/\s+/).length < 20).slice(0, 3);
 
   while (steps.length < 3) {
     steps.push("Take one calm breath and note one vivid detail around you.");
@@ -301,100 +251,41 @@ function normalizeQuest(value: Partial<Quest>): Quest | null {
   };
 }
 
-function extractFirstJsonObject(text: string): string | null {
-  const first = text.indexOf("{");
-  const last = text.lastIndexOf("}");
-  if (first === -1 || last === -1 || last <= first) return null;
-  return text.slice(first, last + 1);
-}
-
-function normalizeLine(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function selectOfflineFallback(
-  input: GenerateInput,
-  requestId: string,
-): { quest: Quest; title: string; score: number } {
+function selectOfflineFallback(input: GenerateInput, requestId: string, reason: string): Quest {
   if (!offlineQuests.length) {
     const emergency = emergencyFallback(input);
-    return { quest: emergency, title: emergency.title, score: 0 };
+    if (process.env.NODE_ENV !== "production") {
+      console.info(`[/api/generate][${requestId}] offline fallback selected: ${emergency.title} (emergency)`);
+    }
+    return emergency;
   }
 
-  const scored = offlineQuests.map((quest) => ({
-    quest,
-    score: scoreOfflineQuest(quest, input),
-  }));
+  let selected = selectOfflineQuest(offlineQuests, input) as OfflineQuest;
+  let rerolls = 0;
 
-  const positive = scored.filter((entry) => entry.score > 0);
-  const pool = positive.length ? positive : scored.map((entry) => ({ ...entry, score: 1 }));
-
-  let pick = weightedPick(pool);
-  let attempts = 0;
-  while (lastOfflineTitle && pick.quest.title === lastOfflineTitle && attempts < 3 && pool.length > 1) {
-    attempts += 1;
-    pick = weightedPick(pool);
+  while (recentTitles.includes(selected.title) && rerolls < 3 && offlineQuests.length > 1) {
+    rerolls += 1;
+    selected = selectOfflineQuest(offlineQuests, input) as OfflineQuest;
   }
 
-  lastOfflineTitle = pick.quest.title;
-  const questContract: Quest = {
-    title: pick.quest.title,
-    vibe: pick.quest.vibe,
-    steps: pick.quest.steps,
-    twist: pick.quest.twist,
-    completion: pick.quest.completion,
-    soundtrack_query: pick.quest.soundtrack_query,
-  };
+  const { fallback_for: _fallback, ...questData } = selected;
+  const normalized = normalizeQuest(questData);
+  const quest = normalized || emergencyFallback(input);
 
   if (process.env.NODE_ENV !== "production") {
-    console.warn(
-      "[offline-fallback] selected:",
-      pick.quest.title,
-      "score:",
-      pick.score,
-      "requestId:",
-      requestId,
+    console.info(
+      `[/api/generate][${requestId}] offline fallback selected: ${quest.title}; reason=${reason}; rerolls=${rerolls}; recent=[${recentTitles.join(", ")}]`,
     );
   }
 
-  return { quest: questContract, title: pick.quest.title, score: pick.score };
+  return quest;
 }
 
-function scoreOfflineQuest(quest: OfflineQuest, input: GenerateInput): number {
-  const tags = new Set(quest.fallback_for.map((tag) => tag.toLowerCase()));
-  const mood = input.mood.toLowerCase();
-  let score = 0;
-
-  if (tags.has(input.energy)) score += 3;
-  if (tags.has("social") && input.social === "social") score += 2;
-  if (tags.has("calm") && (input.energy === "low" || input.lowSensory)) score += 2;
-  if (tags.has("chaotic") && input.chaos >= 7) score += 2;
-  if (tags.has("energetic") && input.energy === "high") score += 2;
-  if (tags.has("curious") && moodIncludesAny(mood, ["curious", "bored", "restless", "explore"])) score += 1;
-  if (tags.has("creative") && moodIncludesAny(mood, ["creative", "idea", "make", "draw"])) score += 1;
-  if (tags.has("reflective") && moodIncludesAny(mood, ["overwhelmed", "sad", "tired", "thoughtful"])) score += 1;
-
-  if (input.lowSensory && tags.has("chaotic") && input.chaos < 8) score -= 3;
-  return score;
-}
-
-function moodIncludesAny(mood: string, words: string[]): boolean {
-  return words.some((word) => mood.includes(word));
-}
-
-function weightedPick(
-  entries: Array<{ quest: OfflineQuest; score: number }>,
-): { quest: OfflineQuest; score: number } {
-  const total = entries.reduce((sum, entry) => sum + Math.max(1, entry.score), 0);
-  const rng = Math.random() * total;
-  let cursor = 0;
-
-  for (const entry of entries) {
-    cursor += Math.max(1, entry.score);
-    if (rng <= cursor) return entry;
+function rememberTitle(title: string): void {
+  recentTitles.push(title);
+  if (recentTitles.length > 5) {
+    recentTitles.shift();
   }
-
-  return entries[entries.length - 1];
 }
 
 function emergencyFallback(input: GenerateInput): Quest {
@@ -410,6 +301,17 @@ function emergencyFallback(input: GenerateInput): Quest {
     completion: "Done when the clue is saved and your next action is written.",
     soundtrack_query: "cinematic cozy mystery lofi",
   };
+}
+
+function extractFirstJsonObject(text: string): string | null {
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first === -1 || last === -1 || last <= first) return null;
+  return text.slice(first, last + 1);
+}
+
+function normalizeLine(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function responseHeaders(requestId: string): Headers {
