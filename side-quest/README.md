@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SideQuest v1
 
-## Getting Started
+Mobile-first "Main Character Mode" app that generates wholesome, mysterious micro-adventures.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router)
+- React + TypeScript
+- OpenAI API (server-side only)
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create `.env.local` from `.env.example` and set your API key:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `OPENAI_API_KEY` (required): OpenAI API key used by `/api/generate`
+- `OPENAI_MODEL` (optional): defaults to `gpt-4.1-mini`
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+### `POST /api/generate`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Accepts:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+{
+  "mood": "curious",
+  "time_available": "45 minutes",
+  "energy": "medium",
+  "social": "solo",
+  "chaos": 4,
+  "noSpend": false,
+  "lowSensory": false
+}
+```
 
-## Deploy on Vercel
+Returns:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "title": "",
+  "vibe": "",
+  "steps": ["", "", ""],
+  "twist": "",
+  "completion": "",
+  "soundtrack_query": ""
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The route retries and repairs model output to enforce valid JSON and contract shape.

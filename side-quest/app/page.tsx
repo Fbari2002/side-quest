@@ -1,65 +1,230 @@
-import Image from "next/image";
+"use client";
+
+import * as React from "react";
+
+type Energy = "low" | "medium" | "high";
+type Social = "solo" | "social";
+
+type Quest = {
+  title: string;
+  vibe: string;
+  steps: string[];
+  twist: string;
+  completion: string;
+  soundtrack_query: string;
+};
+
+type FormState = {
+  mood: string;
+  time_available: string;
+  energy: Energy;
+  social: Social;
+  chaos: number;
+  noSpend: boolean;
+  lowSensory: boolean;
+};
+
+const initialForm: FormState = {
+  mood: "curious",
+  time_available: "45 minutes",
+  energy: "medium",
+  social: "solo",
+  chaos: 4,
+  noSpend: false,
+  lowSensory: false,
+};
 
 export default function Home() {
+  const [form, setForm] = React.useState<FormState>(initialForm);
+  const [quest, setQuest] = React.useState<Quest | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = (await response.json()) as Quest | { error?: string };
+
+      if (!response.ok || !("title" in data)) {
+        const err = "error" in data ? data.error : undefined;
+        throw new Error(err || "Failed to generate quest.");
+      }
+
+      setQuest(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const spotifyUrl = quest
+    ? `https://open.spotify.com/search/${encodeURIComponent(quest.soundtrack_query)}`
+    : "";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
+      <section className="rounded-3xl border border-[var(--line)] bg-[var(--card)]/80 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)] backdrop-blur">
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
+        <h1 className="mt-2 text-2xl font-semibold">Main Character Mode</h1>
+        <p className="mt-2 text-sm text-[var(--muted)]">
+          Wholesome, mysterious micro-adventures with low overwhelm.
+        </p>
+
+        <form className="mt-5 space-y-4" onSubmit={onSubmit}>
+          <Labeled label="Mood">
+            <input
+              className={fieldClass}
+              name="mood"
+              value={form.mood}
+              onChange={(e) => setForm((s) => ({ ...s, mood: e.target.value }))}
+              placeholder="cozy, curious, brave"
+              required
             />
-            Deploy Now
-          </a>
+          </Labeled>
+
+          <Labeled label="Time available">
+            <input
+              className={fieldClass}
+              name="time_available"
+              value={form.time_available}
+              onChange={(e) => setForm((s) => ({ ...s, time_available: e.target.value }))}
+              placeholder="2 hours"
+              required
+            />
+          </Labeled>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Labeled label="Energy">
+              <select
+                className={fieldClass}
+                value={form.energy}
+                onChange={(e) => setForm((s) => ({ ...s, energy: e.target.value as Energy }))}
+              >
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+              </select>
+            </Labeled>
+
+            <Labeled label="Mode">
+              <select
+                className={fieldClass}
+                value={form.social}
+                onChange={(e) => setForm((s) => ({ ...s, social: e.target.value as Social }))}
+              >
+                <option value="solo">solo</option>
+                <option value="social">social</option>
+              </select>
+            </Labeled>
+          </div>
+
+          <Labeled label={`Chaos: ${form.chaos}`}>
+            <input
+              className="w-full accent-[var(--accent)]"
+              type="range"
+              min={0}
+              max={10}
+              value={form.chaos}
+              onChange={(e) => setForm((s) => ({ ...s, chaos: Number(e.target.value) }))}
+            />
+          </Labeled>
+
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <label className={toggleClass}>
+              <input
+                type="checkbox"
+                checked={form.noSpend}
+                onChange={(e) => setForm((s) => ({ ...s, noSpend: e.target.checked }))}
+              />
+              <span>No spend money</span>
+            </label>
+
+            <label className={toggleClass}>
+              <input
+                type="checkbox"
+                checked={form.lowSensory}
+                onChange={(e) => setForm((s) => ({ ...s, lowSensory: e.target.checked }))}
+              />
+              <span>Low sensory</span>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] px-4 py-3 font-semibold text-[#081019] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {loading ? "Generating..." : "Generate quest"}
+          </button>
+
+          {error && <p className="text-sm text-rose-300">{error}</p>}
+        </form>
+      </section>
+
+      {quest && (
+        <section className="rounded-3xl border border-[var(--line)] bg-[var(--card-soft)]/90 p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
+          <h2 className="mt-2 text-xl font-semibold">{quest.title}</h2>
+
+          <div className="mt-4 space-y-3 text-sm">
+            <Info label="Vibe" value={quest.vibe} />
+            <div>
+              <p className="text-[var(--muted)]">Steps</p>
+              <ol className="mt-1 list-decimal space-y-1 pl-5">
+                {quest.steps.map((step, i) => (
+                  <li key={`${step}-${i}`}>{step}</li>
+                ))}
+              </ol>
+            </div>
+            <Info label="Twist" value={quest.twist} />
+            <Info label="Completion" value={quest.completion} />
+          </div>
+
           <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)]"
+            href={spotifyUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Documentation
+            🎧 Play the vibe
           </a>
-        </div>
-      </main>
+        </section>
+      )}
+    </main>
+  );
+}
+
+const fieldClass =
+  "w-full rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)]";
+
+const toggleClass =
+  "flex items-center gap-2 rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2";
+
+function Labeled({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block text-[var(--muted)]">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[var(--muted)]">{label}</p>
+      <p className="mt-1">{value}</p>
     </div>
   );
 }

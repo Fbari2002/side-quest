@@ -50,3 +50,31 @@ Rules:
 
 ## Tech preference (for Codex)
 Next.js app router. Do not expose API keys client-side.
+
+## Updated Visual Direction (Iteration 2)
+
+Tone shift:
+Less dark/edgy SaaS.
+More alive, colourful, warm.
+
+Background:
+- Dark navy base with subtle gradient glow.
+- Hints of indigo, teal, or soft purple.
+- Optional soft animated gradient movement.
+
+UI:
+- Rounded soft components.
+- Subtle glassmorphism or soft glow edges.
+- Avoid harsh borders.
+
+Primary CTA:
+- Warm gradient (gold / coral / soft purple blend).
+- Should feel magical but refined.
+
+Overall feel:
+Premium.
+Playful.
+Curious.
+Alive.
+Not corporate.
+Not edgy tech.
