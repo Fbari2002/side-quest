@@ -13,7 +13,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <div className="bg-layer" aria-hidden="true"></div>
+        <div className="app-shell">{children}</div>
+      </body>
     </html>
   );
 }
