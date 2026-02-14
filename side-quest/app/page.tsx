@@ -73,19 +73,12 @@ export default function Home() {
   async function onShareQuest() {
     if (!quest) return;
 
-    const text = [
-      `${quest.title}`,
-      `Vibe: ${quest.vibe}`,
-      "Steps:",
-      ...quest.steps.map((step, index) => `${index + 1}. ${step}`),
-      `Plot twist: ${quest.twist}`,
-      `To complete: ${quest.completion}`,
-    ].join("\n");
+    const text = formatQuestForShare(quest);
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "SideQuest",
+          title: safeLine(quest.title, "SideQuest quest"),
           text,
           url: window.location.href,
         });
@@ -272,4 +265,39 @@ function Info({ label, value }: { label: string; value: string }) {
       <p className="mt-1">{value}</p>
     </div>
   );
+}
+
+function formatQuestForShare(quest: Partial<Quest>): string {
+  const title = safeLine(quest.title, "Untitled Quest");
+  const vibe = safeLine(quest.vibe, "Mysterious");
+  const twist = safeLine(quest.twist, "A tiny surprise appears.");
+  const completion = safeLine(quest.completion, "When you feel complete, mark it done.");
+  const soundtrackQuery = safeLine(quest.soundtrack_query, "cinematic cozy mystery lofi");
+
+  const rawSteps = Array.isArray(quest.steps) ? quest.steps : [];
+  const steps = rawSteps
+    .map((step) => safeLine(step, ""))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  while (steps.length < 3) {
+    steps.push("Take one small mindful action.");
+  }
+
+  return [
+    `SideQuest: ${title}`,
+    `Vibe: ${vibe}`,
+    `1) ${steps[0]}`,
+    `2) ${steps[1]}`,
+    `3) ${steps[2]}`,
+    `Plot twist: ${twist}`,
+    `To complete: ${completion}`,
+    `🎧 https://open.spotify.com/search/${encodeURIComponent(soundtrackQuery)}`,
+  ].join("\n");
+}
+
+function safeLine(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const cleaned = value.trim();
+  return cleaned || fallback;
 }

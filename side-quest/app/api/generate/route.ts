@@ -53,6 +53,16 @@ export async function POST(req: Request) {
     }
 
     if (!process.env.OPENAI_API_KEY) {
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+          { error: "Server misconfigured: missing OPENAI_API_KEY" },
+          { status: 500 },
+        );
+      }
+
+      console.warn(
+        "[/api/generate] OPENAI_API_KEY is missing in development; returning fallback quest.",
+      );
       return NextResponse.json(fallbackQuest(input));
     }
 
