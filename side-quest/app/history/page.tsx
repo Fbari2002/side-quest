@@ -37,10 +37,11 @@ export default function HistoryPage() {
 
       <section className="main-card rounded-3xl p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">History</p>
-        <h1 className="mt-2 text-2xl font-semibold">Saved Quests</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Your SideQuest Archive</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Your saved SideQuests, newest first.
+          Every micro-adventure you&apos;ve chosen.
         </p>
+        <p className="mt-2 text-sm text-[var(--muted)]">You&apos;ve completed {saved.length} adventures so far ✨</p>
       </section>
 
       {loaded && saved.length === 0 && (
@@ -60,10 +61,14 @@ export default function HistoryPage() {
 
       {saved.length > 0 && (
         <section className="grid gap-4 md:grid-cols-2">
-          {saved.map((entry) => (
+          {saved.map((entry, index) => (
             <article
               key={entry.id}
-              className="main-card rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+              className={`main-card rounded-3xl p-5 transition motion-safe:duration-200 motion-safe:hover:scale-[1.01] motion-safe:hover:shadow-[0_16px_36px_rgba(0,0,0,0.34)] motion-reduce:transition-none ${
+                index === 0
+                  ? "border-[rgba(246,196,83,0.35)] shadow-[0_0_0_1px_rgba(246,196,83,0.24),0_14px_34px_rgba(0,0,0,0.3)]"
+                  : "shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+              }`}
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex rounded-full border border-[var(--line)] bg-[#101729] px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-[var(--muted)]">
@@ -77,7 +82,7 @@ export default function HistoryPage() {
               </div>
 
               <h2 className="mt-2 text-xl font-semibold leading-tight">{entry.quest.title}</h2>
-              <p className="mt-1 text-xs text-[var(--muted)]">{formatSavedDate(entry.savedAt)}</p>
+              <p className="mt-1 text-[11px] text-[#7f8aa9]">{formatRelativeTime(entry.savedAt)}</p>
 
               <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-[var(--muted)]">
                 {entry.quest.steps.slice(0, 2).map((step, i) => (
@@ -89,7 +94,7 @@ export default function HistoryPage() {
                 <Link
                   href={`/history/${entry.id}`}
                   aria-label={`View saved quest ${entry.quest.title}`}
-                  className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium transition hover:border-[var(--accent)]"
+                  className="inline-flex items-center justify-center rounded-2xl border border-[var(--accent)] bg-[linear-gradient(90deg,rgba(79,70,229,0.25),rgba(45,212,191,0.18))] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:brightness-105"
                 >
                   <ViewIcon />
                   View
@@ -98,7 +103,7 @@ export default function HistoryPage() {
                   type="button"
                   aria-label={`Delete saved quest ${entry.quest.title}`}
                   onClick={() => onDelete(entry.id)}
-                  className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium transition hover:border-rose-400"
+                  className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--muted)] transition hover:border-rose-400 hover:text-rose-200"
                 >
                   <DeleteIcon />
                   Delete
@@ -112,8 +117,26 @@ export default function HistoryPage() {
   );
 }
 
-function formatSavedDate(savedAt: number): string {
-  return new Date(savedAt).toLocaleString();
+function formatRelativeTime(savedAt: number): string {
+  const diffMs = Date.now() - savedAt;
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diffMs < minute) return "Just now";
+
+  if (diffMs < hour) {
+    const mins = Math.max(1, Math.floor(diffMs / minute));
+    return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  }
+
+  if (diffMs < day) {
+    const hours = Math.max(1, Math.floor(diffMs / hour));
+    return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  }
+
+  const days = Math.max(1, Math.floor(diffMs / day));
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 function ViewIcon() {
