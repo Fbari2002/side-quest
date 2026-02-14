@@ -40,13 +40,38 @@ export default function QuestPage() {
   const [quest, setQuest] = React.useState<Quest | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [shareMessage, setShareMessage] = React.useState<string | null>(null);
+  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const moodInputRef = React.useRef<HTMLInputElement | null>(null);
+  const toastTimerRef = React.useRef<number | null>(null);
+
+  const announceText = loading
+    ? "Activating Main Character Mode."
+    : error || toastMessage || (quest ? "Quest ready." : "");
+
+  React.useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  function showToast(message: string) {
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    setToastMessage(message);
+    toastTimerRef.current = window.setTimeout(() => setToastMessage(null), 2200);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    await submitQuest();
+  }
+
+  async function submitQuest() {
     setLoading(true);
     setError(null);
-    setShareMessage(null);
 
     try {
       const response = await fetch("/api/generate", {
@@ -63,6 +88,7 @@ export default function QuestPage() {
       }
 
       setQuest(data);
+      showToast("Quest ready ✨");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong.";
       setError(message);
@@ -83,14 +109,19 @@ export default function QuestPage() {
           text,
           url: window.location.href,
         });
+        showToast("Shared");
         return;
       }
 
       await navigator.clipboard.writeText(text);
-      setShareMessage("Quest copied to clipboard.");
-      window.setTimeout(() => setShareMessage(null), 2200);
+      showToast("Copied to clipboard ✨");
     } catch {
-      setShareMessage("Could not share right now.");
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Couldn't share — copied instead.");
+      } catch {
+        showToast("Could not share right now.");
+      }
     }
   }
 
@@ -113,11 +144,15 @@ export default function QuestPage() {
         <p className="mt-2 text-sm text-[var(--muted)]">
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
+        <p aria-live="polite" className="sr-only">
+          {announceText}
+        </p>
 
         <form className="mt-5" onSubmit={onSubmit}>
           <fieldset disabled={loading} className="space-y-4 disabled:cursor-not-allowed disabled:opacity-80">
             <Labeled label="Mood">
               <input
+                ref={moodInputRef}
                 className={fieldClass}
                 name="mood"
                 value={form.mood}
@@ -203,7 +238,31 @@ export default function QuestPage() {
             </button>
           </fieldset>
 
-          {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
+          {error && (
+            <div className="mt-3">
+              <p className="text-sm text-rose-300">{error}</p>
+              <div className="mt-2 flex gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={submitQuest}
+                  disabled={loading}
+                  className="rounded-full border border-[var(--line)] px-3 py-1 text-[var(--text)] transition hover:border-[var(--accent)] disabled:opacity-60"
+                >
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    moodInputRef.current?.focus();
+                  }}
+                  className="rounded-full border border-[var(--line)] px-3 py-1 text-[var(--muted)] transition hover:text-[var(--text)]"
+                >
+                  Edit inputs
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </section>
 
@@ -232,6 +291,7 @@ export default function QuestPage() {
               href={spotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => showToast("Opening Spotify…")}
             >
               🎧 Play the vibe
             </a>
@@ -243,9 +303,15 @@ export default function QuestPage() {
               Share quest
             </button>
           </div>
-
-          {shareMessage && <p className="mt-3 text-xs text-[var(--muted)]">{shareMessage}</p>}
         </section>
+      )}
+
+      {toastMessage && (
+        <div className="pointer-events-none fixed bottom-4 left-1/2 z-20 w-[min(92vw,24rem)] -translate-x-1/2">
+          <div className="rounded-xl border border-[var(--line)] bg-[#0d1426]/95 px-4 py-2 text-center text-sm text-[var(--text)] shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur">
+            {toastMessage}
+          </div>
+        </div>
       )}
     </main>
   );
