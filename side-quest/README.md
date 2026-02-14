@@ -1,12 +1,12 @@
 # SideQuest v1
 
-Mobile-first "Main Character Mode" app that generates wholesome, mysterious micro-adventures.
+Mobile-first "Main Character Mode" app for wholesome, mysterious micro-adventures.
 
-## Stack
+## Tech
 
-- Next.js (App Router)
+- Next.js App Router
 - React + TypeScript
-- OpenAI API (server-side only)
+- OpenAI API (server only)
 
 ## Setup
 
@@ -16,13 +16,21 @@ Mobile-first "Main Character Mode" app that generates wholesome, mysterious micr
 npm install
 ```
 
-2. Create `.env.local` from `.env.example` and set your API key:
+2. Create local env file:
 
 ```bash
-cp .env .env.local
+cp .env.example .env.local
 ```
 
-3. Start the dev server:
+3. Set your key in `.env.local`:
+
+```bash
+OPENAI_API_KEY=your_key_here
+# Optional
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+4. Run:
 
 ```bash
 npm run dev
@@ -30,16 +38,11 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## Environment Variables
-
-- `OPENAI_API_KEY` (required): OpenAI API key used by `/api/generate`
-- `OPENAI_MODEL` (optional): defaults to `gpt-4.1-mini`
-
 ## API
 
 ### `POST /api/generate`
 
-Accepts:
+Request body:
 
 ```json
 {
@@ -53,7 +56,7 @@ Accepts:
 }
 ```
 
-Returns:
+Response body (strict JSON contract):
 
 ```json
 {
@@ -66,4 +69,10 @@ Returns:
 }
 ```
 
-The route retries and repairs model output to enforce valid JSON and contract shape.
+Reliability: structured output schema, then parse+retry once, then safe fallback quest.
+
+## Deploying to Vercel
+
+- Add `OPENAI_API_KEY` in Vercel Project Settings -> Environment Variables.
+- Optionally set `OPENAI_MODEL`.
+- Redeploy after setting env vars.

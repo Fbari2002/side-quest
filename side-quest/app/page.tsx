@@ -8,7 +8,7 @@ type Social = "solo" | "social";
 type Quest = {
   title: string;
   vibe: string;
-  steps: string[];
+  steps: [string, string, string] | string[];
   twist: string;
   completion: string;
   soundtrack_query: string;
@@ -39,11 +39,13 @@ export default function Home() {
   const [quest, setQuest] = React.useState<Quest | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [shareMessage, setShareMessage] = React.useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setShareMessage(null);
 
     try {
       const response = await fetch("/api/generate", {
@@ -56,7 +58,7 @@ export default function Home() {
 
       if (!response.ok || !("title" in data)) {
         const err = "error" in data ? data.error : undefined;
-        throw new Error(err || "Failed to generate quest.");
+        throw new Error(err || "Could not generate a quest. Please retry.");
       }
 
       setQuest(data);
@@ -65,6 +67,36 @@ export default function Home() {
       setError(message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onShareQuest() {
+    if (!quest) return;
+
+    const text = [
+      `${quest.title}`,
+      `Vibe: ${quest.vibe}`,
+      "Steps:",
+      ...quest.steps.map((step, index) => `${index + 1}. ${step}`),
+      `Plot twist: ${quest.twist}`,
+      `To complete: ${quest.completion}`,
+    ].join("\n");
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "SideQuest",
+          text,
+          url: window.location.href,
+        });
+        return;
+      }
+
+      await navigator.clipboard.writeText(text);
+      setShareMessage("Quest copied to clipboard.");
+      window.setTimeout(() => setShareMessage(null), 2200);
+    } catch {
+      setShareMessage("Could not share right now.");
     }
   }
 
@@ -81,104 +113,106 @@ export default function Home() {
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
 
-        <form className="mt-5 space-y-4" onSubmit={onSubmit}>
-          <Labeled label="Mood">
-            <input
-              className={fieldClass}
-              name="mood"
-              value={form.mood}
-              onChange={(e) => setForm((s) => ({ ...s, mood: e.target.value }))}
-              placeholder="cozy, curious, brave"
-              required
-            />
-          </Labeled>
-
-          <Labeled label="Time available">
-            <input
-              className={fieldClass}
-              name="time_available"
-              value={form.time_available}
-              onChange={(e) => setForm((s) => ({ ...s, time_available: e.target.value }))}
-              placeholder="2 hours"
-              required
-            />
-          </Labeled>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Labeled label="Energy">
-              <select
+        <form className="mt-5" onSubmit={onSubmit}>
+          <fieldset disabled={loading} className="space-y-4 disabled:cursor-not-allowed disabled:opacity-80">
+            <Labeled label="Mood">
+              <input
                 className={fieldClass}
-                value={form.energy}
-                onChange={(e) => setForm((s) => ({ ...s, energy: e.target.value as Energy }))}
-              >
-                <option value="low">low</option>
-                <option value="medium">medium</option>
-                <option value="high">high</option>
-              </select>
+                name="mood"
+                value={form.mood}
+                onChange={(e) => setForm((s) => ({ ...s, mood: e.target.value }))}
+                placeholder="cozy, curious, brave"
+                required
+              />
             </Labeled>
 
-            <Labeled label="Mode">
-              <select
+            <Labeled label="Time available">
+              <input
                 className={fieldClass}
-                value={form.social}
-                onChange={(e) => setForm((s) => ({ ...s, social: e.target.value as Social }))}
-              >
-                <option value="solo">solo</option>
-                <option value="social">social</option>
-              </select>
+                name="time_available"
+                value={form.time_available}
+                onChange={(e) => setForm((s) => ({ ...s, time_available: e.target.value }))}
+                placeholder="2 hours"
+                required
+              />
             </Labeled>
-          </div>
 
-          <Labeled label={`Chaos: ${form.chaos}`}>
-            <input
-              className="w-full accent-[var(--accent)]"
-              type="range"
-              min={0}
-              max={10}
-              value={form.chaos}
-              onChange={(e) => setForm((s) => ({ ...s, chaos: Number(e.target.value) }))}
-            />
-          </Labeled>
+            <div className="grid grid-cols-2 gap-3">
+              <Labeled label="Energy">
+                <select
+                  className={fieldClass}
+                  value={form.energy}
+                  onChange={(e) => setForm((s) => ({ ...s, energy: e.target.value as Energy }))}
+                >
+                  <option value="low">low</option>
+                  <option value="medium">medium</option>
+                  <option value="high">high</option>
+                </select>
+              </Labeled>
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <label className={toggleClass}>
+              <Labeled label="Mode">
+                <select
+                  className={fieldClass}
+                  value={form.social}
+                  onChange={(e) => setForm((s) => ({ ...s, social: e.target.value as Social }))}
+                >
+                  <option value="solo">solo</option>
+                  <option value="social">social</option>
+                </select>
+              </Labeled>
+            </div>
+
+            <Labeled label={`Chaos: ${form.chaos}`}>
               <input
-                type="checkbox"
-                checked={form.noSpend}
-                onChange={(e) => setForm((s) => ({ ...s, noSpend: e.target.checked }))}
+                className="w-full accent-[var(--accent)]"
+                type="range"
+                min={0}
+                max={10}
+                value={form.chaos}
+                onChange={(e) => setForm((s) => ({ ...s, chaos: Number(e.target.value) }))}
               />
-              <span>No spend money</span>
-            </label>
+            </Labeled>
 
-            <label className={toggleClass}>
-              <input
-                type="checkbox"
-                checked={form.lowSensory}
-                onChange={(e) => setForm((s) => ({ ...s, lowSensory: e.target.checked }))}
-              />
-              <span>Low sensory</span>
-            </label>
-          </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <label className={toggleClass}>
+                <input
+                  type="checkbox"
+                  checked={form.noSpend}
+                  onChange={(e) => setForm((s) => ({ ...s, noSpend: e.target.checked }))}
+                />
+                <span>No spend money</span>
+              </label>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {loading ? "Generating..." : "Generate quest"}
-          </button>
+              <label className={toggleClass}>
+                <input
+                  type="checkbox"
+                  checked={form.lowSensory}
+                  onChange={(e) => setForm((s) => ({ ...s, lowSensory: e.target.checked }))}
+                />
+                <span>Low sensory</span>
+              </label>
+            </div>
 
-          {error && <p className="text-sm text-rose-300">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? "Activating Main Character Mode…" : "Generate quest"}
+            </button>
+          </fieldset>
+
+          {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
         </form>
       </section>
 
       {quest && (
-        <section className="main-card rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+        <section className="main-card result-reveal rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
-          <h2 className="mt-2 text-xl font-semibold">{quest.title}</h2>
+          <h2 className="mt-2 text-2xl font-semibold leading-tight">{quest.title}</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">{quest.vibe}</p>
 
-          <div className="mt-4 space-y-3 text-sm">
-            <Info label="Vibe" value={quest.vibe} />
+          <div className="mt-4 space-y-4 text-sm">
             <div>
               <p className="text-[var(--muted)]">Steps</p>
               <ol className="mt-1 list-decimal space-y-1 pl-5">
@@ -187,18 +221,29 @@ export default function Home() {
                 ))}
               </ol>
             </div>
-            <Info label="Twist" value={quest.twist} />
-            <Info label="Completion" value={quest.completion} />
+            <Info label="Plot twist" value={quest.twist} />
+            <Info label="To complete" value={quest.completion} />
           </div>
 
-          <a
-            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)]"
-            href={spotifyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            🎧 Play the vibe
-          </a>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <a
+              className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)]"
+              href={spotifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🎧 Play the vibe
+            </a>
+            <button
+              type="button"
+              onClick={onShareQuest}
+              className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--warm)]"
+            >
+              Share quest
+            </button>
+          </div>
+
+          {shareMessage && <p className="mt-3 text-xs text-[var(--muted)]">{shareMessage}</p>}
         </section>
       )}
     </main>
@@ -206,7 +251,7 @@ export default function Home() {
 }
 
 const fieldClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_rgba(45,212,191,0.18)]";
+  "w-full rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_rgba(45,212,191,0.18)] disabled:opacity-70";
 
 const toggleClass =
   "flex items-center gap-2 rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2";

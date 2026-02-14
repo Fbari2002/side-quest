@@ -175,6 +175,10 @@ body {
   .bg-layer::after {
     animation: none;
   }
+
+  .result-reveal {
+    animation: none;
+  }
 }
 
 /* Verification tip: in local dev, temporarily set driftA/driftB to 6s to confirm movement. */
@@ -213,4 +217,19 @@ select,
 textarea,
 button {
   font: inherit;
+}
+
+.result-reveal {
+  animation: resultReveal 420ms ease-out both;
+}
+
+@keyframes resultReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
