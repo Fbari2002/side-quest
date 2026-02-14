@@ -169,86 +169,6 @@ body {
   }
 }
 
-.mood-chip {
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background:
-    linear-gradient(#0f172f, #0f172f) padding-box,
-    linear-gradient(
-      120deg,
-      rgba(45, 212, 191, 0.55),
-      rgba(79, 70, 229, 0.45),
-      rgba(251, 113, 133, 0.4),
-      rgba(246, 196, 83, 0.4)
-    ) border-box;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.73rem;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-}
-
-.cta-shimmer {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(90deg, var(--warm), var(--accent-2), var(--accent));
-  transition:
-    transform 240ms ease-out,
-    box-shadow 240ms ease-out,
-    filter 240ms ease-out;
-}
-
-.cta-shimmer::after {
-  content: "";
-  position: absolute;
-  top: -35%;
-  left: -42%;
-  width: 36%;
-  height: 170%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.32),
-    rgba(255, 255, 255, 0)
-  );
-  transform: translateX(-160%);
-  transition: transform 680ms ease-out;
-}
-
-.cta-shimmer:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow: 0 0 32px rgba(246, 196, 83, 0.33);
-}
-
-.cta-shimmer:hover::after {
-  transform: translateX(430%);
-}
-
-.cta-shimmer:active {
-  transform: scale(0.98);
-  transition-duration: 160ms;
-}
-
-.example-card::after {
-  content: "";
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  top: -1px;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(246, 196, 83, 0.65),
-    rgba(251, 113, 133, 0.45),
-    rgba(79, 70, 229, 0.55),
-    rgba(45, 212, 191, 0.5)
-  );
-  opacity: 0.6;
-  pointer-events: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .bg-layer,
   .bg-layer::before,
@@ -258,16 +178,6 @@ body {
 
   .result-reveal {
     animation: none;
-  }
-
-  .cta-shimmer,
-  .cta-shimmer::after {
-    transition: none;
-  }
-
-  .cta-shimmer:hover,
-  .cta-shimmer:active {
-    transform: none;
   }
 }
 

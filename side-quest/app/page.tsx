@@ -1,48 +1,36 @@
 import Link from "next/link";
 
 export default function LandingPage() {
-  const moods = ["Calm", "Curious", "Chaotic", "Cosy"];
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
       <section className="main-card rounded-3xl p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
-        <h1 className="mt-2 text-[2.15rem] font-semibold leading-[1.12] sm:text-[2.35rem]">
-          Activate Main Character Mode.
-        </h1>
+        <h1 className="mt-2 text-3xl font-semibold leading-tight">Main Character Mode for micro-adventures.</h1>
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-          Tiny, mood-matched side quests.
-          <br />
-          Calm when you need calm.
-          <br />
-          Chaos when you need chaos.
+          SideQuest generates wholesome, mysterious micro-adventures tailored to your mood, energy
+          and time. Designed to be low-overwhelm and neurodivergent-friendly. No pressure. Just
+          playful momentum.
         </p>
-        <p className="mt-2 text-xs text-[var(--muted)]">No pressure. Just playful momentum.</p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {moods.map((mood) => (
-            <span key={mood} className="mood-chip">
-              {mood}
-            </span>
-          ))}
-        </div>
-
-        <Link href="/quest" className="cta-shimmer mt-5 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 font-semibold text-[#081019]">
-          <span className="relative z-10">Start a SideQuest</span>
+        <Link
+          href="/quest"
+          className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)]"
+        >
+          Start your quest
         </Link>
       </section>
 
       <section className="main-card rounded-3xl p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
         <h2 className="text-lg font-semibold">How it works</h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-[var(--muted)]">
-          <li>Tell us your energy.</li>
-          <li>Get a tailored side quest.</li>
-          <li>Feel different in under 30 minutes.</li>
+          <li>Pick your vibe</li>
+          <li>Generate your quest</li>
+          <li>Play the soundtrack + share it</li>
         </ol>
       </section>
 
-      <section className="main-card example-card rounded-3xl p-5 opacity-95 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
-        <p className="text-xs tracking-[0.14em] text-[var(--muted)]">✨ Example quest</p>
+      <section className="main-card rounded-3xl p-5 opacity-95 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Example Quest</p>
         <h2 className="mt-2 text-2xl font-semibold leading-tight">The Colour Hunt</h2>
         <p className="mt-2 text-sm text-[var(--muted)]">Playful curiosity</p>
 
