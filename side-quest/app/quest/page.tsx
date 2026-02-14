@@ -6,6 +6,7 @@ import GlowButton from "@/components/GlowButton";
 import GlowCard from "@/components/GlowCard";
 import Sparkle from "@/components/Sparkle";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
+import { openSpotifySearch, spotifyWebSearchUrl } from "@/lib/spotify";
 import {
   deleteQuest,
   findSavedIdByQuest,
@@ -164,9 +165,7 @@ export default function QuestPage() {
     showToast(result.saved ? "Saved to History ✨" : "Already saved");
   }
 
-  const spotifyUrl = quest
-    ? `https://open.spotify.com/search/${encodeURIComponent(quest.soundtrack_query)}`
-    : "";
+  const spotifyUrl = quest ? spotifyWebSearchUrl(quest.soundtrack_query) : "";
 
   return (
     <main className="page-enter mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
@@ -370,22 +369,21 @@ export default function QuestPage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <a
+            <button
+              type="button"
               className={`inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)] ${
                 loading ? "pointer-events-none opacity-60" : ""
               }`}
-              href={spotifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => {
+              onClick={async () => {
                 if (loading) return;
                 showToast("Opening Spotify…");
+                await openSpotifySearch(quest.soundtrack_query);
               }}
               aria-disabled={loading}
               aria-label="Open quest soundtrack in Spotify"
             >
               🎧 Play the vibe
-            </a>
+            </button>
             <button
               type="button"
               onClick={onShareQuest}
@@ -397,6 +395,14 @@ export default function QuestPage() {
               Share quest
             </button>
           </div>
+          <a
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex text-xs text-[var(--muted)] transition hover:text-[var(--text)]"
+          >
+            Open in browser
+          </a>
           <button
             type="button"
             onClick={onSaveQuest}

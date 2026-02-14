@@ -6,19 +6,24 @@ import { useParams } from "next/navigation";
 import GlowCard from "@/components/GlowCard";
 import Sparkle from "@/components/Sparkle";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
-import { getQuestById, type SavedQuestEntry } from "@/lib/savedQuests";
+import { openSpotifySearch, spotifyWebSearchUrl } from "@/lib/spotify";
+import { getQuestById, saveQuest, type QuestData, type SavedQuestEntry } from "@/lib/savedQuests";
 
 export default function SavedQuestDetailPage() {
   const params = useParams<{ id: string }>();
   const questId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const [saved, setSaved] = React.useState<SavedQuestEntry | null>(null);
+  const [displayQuest, setDisplayQuest] = React.useState<QuestData | null>(null);
   const [loaded, setLoaded] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
+  const [isRemixing, setIsRemixing] = React.useState(false);
   const { toastMessage, showToast } = useToast(2500);
 
   React.useEffect(() => {
     if (!questId) return;
-    setSaved(getQuestById(questId));
+    const entry = getQuestById(questId);
+    setSaved(entry);
+    setDisplayQuest(entry?.quest ?? null);
     setLoaded(true);
   }, [questId]);
 
@@ -27,19 +32,20 @@ export default function SavedQuestDetailPage() {
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  const spotifyUrl = saved
-    ? `https://open.spotify.com/search/${encodeURIComponent(saved.quest.soundtrack_query)}`
+  const activeQuest = displayQuest || saved?.quest || null;
+  const spotifyUrl = activeQuest
+    ? spotifyWebSearchUrl(activeQuest.soundtrack_query)
     : "";
 
   async function onShareQuest() {
-    if (!saved) return;
+    if (!activeQuest) return;
 
-    const text = formatQuestForShare(saved.quest);
+    const text = formatQuestForShare(activeQuest);
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: safeLine(saved.quest.title, "SideQuest quest"),
+          title: safeLine(activeQuest.title, "SideQuest quest"),
           text,
           url: window.location.href,
         });
@@ -56,6 +62,40 @@ export default function SavedQuestDetailPage() {
       } catch {
         showToast("Share failed. Please try again.");
       }
+    }
+  }
+
+  async function onRemixQuest() {
+    if (!saved?.input) {
+      showToast("Can’t remix this one (missing inputs).");
+      return;
+    }
+
+    setIsRemixing(true);
+    showToast("Remixing…");
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(saved.input),
+      });
+
+      const data = (await response.json()) as QuestData | { error?: string };
+      if (!response.ok || !("title" in data)) {
+        throw new Error("Could not remix this quest.");
+      }
+
+      setDisplayQuest(data);
+      setIsVisible(false);
+      window.requestAnimationFrame(() => setIsVisible(true));
+      saveQuest({ quest: data, input: saved.input });
+      showToast("Remix saved ✨");
+    } catch {
+      showToast("Could not remix right now.");
+    } finally {
+      setIsRemixing(false);
     }
   }
 
@@ -84,7 +124,7 @@ export default function SavedQuestDetailPage() {
         </section>
       )}
 
-      {saved && (
+      {saved && activeQuest && (
         <GlowCard
           as="section"
           aria-live="polite"
@@ -95,34 +135,35 @@ export default function SavedQuestDetailPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Saved quest</p>
           <div className="mt-2 flex items-center gap-2">
             <Sparkle />
-            <h1 className="text-2xl font-semibold leading-tight">{saved.quest.title}</h1>
+            <h1 className="text-2xl font-semibold leading-tight">{activeQuest.title}</h1>
           </div>
-          <p className="mt-2 text-sm text-[var(--muted)]">{saved.quest.vibe}</p>
+          <p className="mt-2 text-sm text-[var(--muted)]">{activeQuest.vibe}</p>
 
           <div className="mt-4 space-y-4 text-sm">
             <div>
               <p className="text-[var(--muted)]">Steps</p>
               <ol className="mt-1 list-decimal space-y-1 pl-5">
-                {saved.quest.steps.map((step, i) => (
+                {activeQuest.steps.map((step, i) => (
                   <li key={`${step}-${i}`}>{step}</li>
                 ))}
               </ol>
             </div>
-            <Info label="Plot twist" value={saved.quest.twist} />
-            <Info label="To complete" value={saved.quest.completion} />
+            <Info label="Plot twist" value={activeQuest.twist} />
+            <Info label="To complete" value={activeQuest.completion} />
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <a
-              href={spotifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            <button
+              type="button"
               aria-label="Open saved quest soundtrack in Spotify"
-              onClick={() => showToast("Opening Spotify…")}
+              onClick={async () => {
+                showToast("Opening Spotify…");
+                await openSpotifySearch(activeQuest.soundtrack_query);
+              }}
               className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)]"
             >
               🎧 Play the vibe
-            </a>
+            </button>
             <button
               type="button"
               onClick={onShareQuest}
@@ -132,7 +173,32 @@ export default function SavedQuestDetailPage() {
               <ShareIcon />
               Share quest
             </button>
+            <button
+              type="button"
+              onClick={onRemixQuest}
+              disabled={isRemixing}
+              aria-label="Remix this saved quest"
+              className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
+            >
+              {isRemixing ? "Remixing…" : "🔄 Remix"}
+            </button>
           </div>
+          <a
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex text-xs text-[var(--muted)] transition hover:text-[var(--text)]"
+          >
+            Open in browser
+          </a>
+          {!saved.input && (
+            <Link
+              href="/quest"
+              className="mt-2 inline-flex text-xs text-[var(--muted)] underline-offset-4 transition hover:text-[var(--text)] hover:underline"
+            >
+              Generate a new quest
+            </Link>
+          )}
         </GlowCard>
       )}
 

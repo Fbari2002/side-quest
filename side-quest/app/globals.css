@@ -268,7 +268,21 @@ body {
 }
 
 .pulse-idle {
-  animation: idlePulse var(--pulse-speed) ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.pulse-idle::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(246, 196, 83, 0.32), rgba(246, 196, 83, 0) 65%);
+  opacity: 0;
+  transform: scale(0.98);
+  animation: pulseOverlay var(--pulse-speed) ease-in-out infinite;
 }
 
 .detail-reveal {
@@ -345,17 +359,26 @@ button {
   }
 }
 
-@keyframes idlePulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(246, 196, 83, 0);
+@keyframes pulseOverlay {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
   }
   50% {
-    box-shadow: 0 0 22px rgba(246, 196, 83, 0.25);
+    opacity: 0.22;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
   }
 }
 
 @media (max-width: 640px) {
+  .bg-layer {
+    animation: none;
+  }
+
   .bg-layer::before {
     inset: -7vmax;
     background:
@@ -382,7 +405,7 @@ button {
 .debug-motion .glow-card::before,
 .debug-motion .glow-button::after,
 .debug-motion .sparkle-pulse,
-.debug-motion .pulse-idle {
+.debug-motion .pulse-idle::before {
   animation-duration: 2s !important;
 }
 
@@ -395,7 +418,7 @@ button {
   .glow-card::before,
   .glow-button::after,
   .sparkle-pulse,
-  .pulse-idle {
+  .pulse-idle::before {
     animation: none !important;
   }
 
