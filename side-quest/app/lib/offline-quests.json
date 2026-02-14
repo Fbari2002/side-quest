@@ -1,0 +1,915 @@
+[
+  {
+    "title": "The Quiet Reset",
+    "vibe": "Calm grounding",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Sit comfortably and close your eyes.",
+      "Take 10 slow breaths.",
+      "Notice one nearby sound."
+    ],
+    "twist": "Name the sound like it’s a character.",
+    "completion": "Open your eyes and stretch slowly.",
+    "soundtrack_query": "ambient calm instrumental"
+  },
+  {
+    "title": "The Window Watch",
+    "vibe": "Gentle awareness",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Sit by a window.",
+      "Notice three small movements outside.",
+      "Pick your favourite one."
+    ],
+    "twist": "Imagine its secret mission.",
+    "completion": "Smile slightly at your chosen moment.",
+    "soundtrack_query": "soft piano instrumental"
+  },
+  {
+    "title": "The Texture Tour",
+    "vibe": "Mindful curiosity",
+    "fallback_for": ["calm", "curious"],
+    "steps": [
+      "Touch five different textures nearby.",
+      "Describe each in one word.",
+      "Choose your favourite texture."
+    ],
+    "twist": "Give it a personality trait.",
+    "completion": "Pause for one deep breath.",
+    "soundtrack_query": "lofi chill beats"
+  },
+  {
+    "title": "Colour Hunt",
+    "vibe": "Curious playfulness",
+    "fallback_for": ["curious", "medium"],
+    "steps": [
+      "Choose one colour.",
+      "Find three shades of it nearby.",
+      "Photograph one."
+    ],
+    "twist": "Pick the one that feels like today.",
+    "completion": "Save or share your chosen colour.",
+    "soundtrack_query": "indie discovery playlist"
+  },
+  {
+    "title": "Micro Dance Break",
+    "vibe": "Energetic spark",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Play an upbeat song.",
+      "Move for 90 seconds.",
+      "Exaggerate one move."
+    ],
+    "twist": "Pretend you’re on stage.",
+    "completion": "Take a dramatic bow.",
+    "soundtrack_query": "upbeat pop dance"
+  },
+  {
+    "title": "Object Backstory",
+    "vibe": "Creative curiosity",
+    "fallback_for": ["curious", "creative"],
+    "steps": [
+      "Pick a random object nearby.",
+      "Invent its secret past.",
+      "Write one dramatic sentence."
+    ],
+    "twist": "Add an unexpected ending.",
+    "completion": "Read it quietly.",
+    "soundtrack_query": "quirky instrumental"
+  },
+  {
+    "title": "Soft Focus Walk",
+    "vibe": "Gentle movement",
+    "fallback_for": ["calm", "medium"],
+    "steps": [
+      "Walk slowly for five minutes.",
+      "Notice light and shadows.",
+      "Pause once intentionally."
+    ],
+    "twist": "Imagine you’re in a film.",
+    "completion": "Return slightly lighter.",
+    "soundtrack_query": "cinematic ambient"
+  },
+  {
+    "title": "Mini Parade",
+    "vibe": "Playful energy",
+    "fallback_for": ["energetic", "playful"],
+    "steps": [
+      "March in place for one minute.",
+      "Add a dramatic arm swing.",
+      "Smile exaggeratedly."
+    ],
+    "twist": "Imagine invisible confetti.",
+    "completion": "Take a deep victorious breath.",
+    "soundtrack_query": "funky upbeat groove"
+  },
+  {
+    "title": "Tiny Gratitude Scan",
+    "vibe": "Grounded reflection",
+    "fallback_for": ["calm", "reflective"],
+    "steps": [
+      "List three small wins today.",
+      "Pick one you overlooked.",
+      "Say thank you softly."
+    ],
+    "twist": "Imagine it glowing briefly.",
+    "completion": "Stand up taller.",
+    "soundtrack_query": "soft acoustic instrumental"
+  },
+  {
+    "title": "Random Word Remix",
+    "vibe": "Creative spark",
+    "fallback_for": ["creative", "curious"],
+    "steps": [
+      "Look up a random word.",
+      "Use it in a sentence.",
+      "Make it slightly dramatic."
+    ],
+    "twist": "Change its meaning.",
+    "completion": "Laugh at your new definition.",
+    "soundtrack_query": "experimental indie"
+  },  {
+  "title": "Five-Thing Noticing",
+  "vibe": "Mindful awareness",
+  "fallback_for": ["calm", "reflective"],
+  "steps": [
+    "Name five things you see.",
+    "Name four things you hear.",
+    "Name three things you feel."
+  ],
+  "twist": "Choose one you usually ignore.",
+  "completion": "Take one steady breath.",
+  "soundtrack_query": "ambient focus music"
+},
+  {
+    "title": "Shadow Study",
+    "vibe": "Curious observation",
+    "fallback_for": ["curious", "calm"],
+    "steps": [
+      "Find a shadow nearby.",
+      "Watch it for two minutes.",
+      "Notice its edges."
+    ],
+    "twist": "Imagine it has a story.",
+    "completion": "Describe it in one sentence.",
+    "soundtrack_query": "minimal instrumental"
+  },
+  {
+    "title": "Energy Shake-Out",
+    "vibe": "Physical reset",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Shake your hands for 20 seconds.",
+      "Roll your shoulders.",
+      "Take one strong breath."
+    ],
+    "twist": "Pretend you reset your system.",
+    "completion": "Stand still for five seconds.",
+    "soundtrack_query": "energetic electronic"
+  },
+  {
+    "title": "Mini Rebrand",
+    "vibe": "Playful creativity",
+    "fallback_for": ["creative", "playful"],
+    "steps": [
+      "Rename yourself for today.",
+      "Choose a matching mood.",
+      "Walk like that person briefly."
+    ],
+    "twist": "Add a dramatic title.",
+    "completion": "Return to your original name smiling.",
+    "soundtrack_query": "empowering pop anthem"
+  },
+  {
+    "title": "Pattern Hunt",
+    "vibe": "Observant curiosity",
+    "fallback_for": ["curious", "medium"],
+    "steps": [
+      "Look for repeating shapes nearby.",
+      "Count how many you see.",
+      "Pick your favourite one."
+    ],
+    "twist": "Imagine it’s a hidden symbol.",
+    "completion": "Take a mental snapshot.",
+    "soundtrack_query": "lofi instrumental beats"
+  },
+  {
+    "title": "One-Line Story",
+    "vibe": "Creative reflection",
+    "fallback_for": ["creative", "reflective"],
+    "steps": [
+      "Choose an object.",
+      "Write one sentence about it.",
+      "Make it slightly mysterious."
+    ],
+    "twist": "Add one unexpected word.",
+    "completion": "Read it aloud quietly.",
+    "soundtrack_query": "cinematic piano"
+  },
+  {
+    "title": "Breath Ladder",
+    "vibe": "Calm focus",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Inhale for four seconds.",
+      "Exhale for four seconds.",
+      "Repeat five times."
+    ],
+    "twist": "Imagine climbing invisible steps.",
+    "completion": "Drop your shoulders gently.",
+    "soundtrack_query": "soft ambient tones"
+  },
+  {
+    "title": "Micro Compliment",
+    "vibe": "Warm connection",
+    "fallback_for": ["social", "playful"],
+    "steps": [
+      "Send one kind message.",
+      "Keep it specific.",
+      "Avoid overthinking it."
+    ],
+    "twist": "Add one playful emoji.",
+    "completion": "Put your phone down.",
+    "soundtrack_query": "feel good indie"
+  },
+  {
+    "title": "Chair Reset",
+    "vibe": "Gentle grounding",
+    "fallback_for": ["calm", "medium"],
+    "steps": [
+      "Sit differently than usual.",
+      "Notice how it feels.",
+      "Adjust once."
+    ],
+    "twist": "Pretend it’s a throne.",
+    "completion": "Smile briefly.",
+    "soundtrack_query": "calm instrumental"
+  },
+  {
+    "title": "Three Bold Steps",
+    "vibe": "Confident spark",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Take three strong steps.",
+      "Stand tall.",
+      "Look forward confidently."
+    ],
+    "twist": "Imagine dramatic lighting.",
+    "completion": "Relax naturally.",
+    "soundtrack_query": "epic motivational music"
+  },
+  {
+    "title": "Reverse Routine",
+    "vibe": "Playful disruption",
+    "fallback_for": ["playful", "medium"],
+    "steps": [
+      "Do one routine task differently.",
+      "Change the order slightly.",
+      "Notice the difference."
+    ],
+    "twist": "Pretend you’re experimenting.",
+    "completion": "Keep the best variation.",
+    "soundtrack_query": "quirky background music"
+  },
+  {
+    "title": "Tiny Declutter",
+    "vibe": "Productive calm",
+    "fallback_for": ["calm", "reflective"],
+    "steps": [
+      "Choose one small surface.",
+      "Remove three items.",
+      "Wipe it lightly."
+    ],
+    "twist": "Call it a micro victory.",
+    "completion": "Step back and observe.",
+    "soundtrack_query": "minimal focus music"
+  },
+  {
+    "title": "Soundtrack Switch",
+    "vibe": "Mood shift",
+    "fallback_for": ["curious", "energetic"],
+    "steps": [
+      "Play a new genre.",
+      "Listen for one minute.",
+      "Notice one instrument."
+    ],
+    "twist": "Rate it dramatically.",
+    "completion": "Keep or skip intentionally.",
+    "soundtrack_query": "random genre playlist"
+  },
+  {
+    "title": "Five Deep Stares",
+    "vibe": "Slow awareness",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Choose an object.",
+      "Look at it slowly.",
+      "Notice five details."
+    ],
+    "twist": "Find one overlooked detail.",
+    "completion": "Blink and reset.",
+    "soundtrack_query": "ambient slow music"
+  },
+  {
+    "title": "Room Explorer",
+    "vibe": "Curious discovery",
+    "fallback_for": ["curious", "medium"],
+    "steps": [
+      "Stand in one corner.",
+      "Scan the room slowly.",
+      "Notice one new detail."
+    ],
+    "twist": "Pretend you’ve never been here.",
+    "completion": "Take a mental note.",
+    "soundtrack_query": "instrumental exploration music"
+  },
+  {
+    "title": "Mini Stretch Flow",
+    "vibe": "Body awareness",
+    "fallback_for": ["energetic", "calm"],
+    "steps": [
+      "Reach arms overhead.",
+      "Stretch gently sideways.",
+      "Roll shoulders slowly."
+    ],
+    "twist": "Move like water briefly.",
+    "completion": "Stand still comfortably.",
+    "soundtrack_query": "soft movement music"
+  },
+  {
+    "title": "Name That Mood",
+    "vibe": "Reflective clarity",
+    "fallback_for": ["reflective", "calm"],
+    "steps": [
+      "Pause for 30 seconds.",
+      "Name your mood.",
+      "Give it a colour."
+    ],
+    "twist": "Imagine it glowing briefly.",
+    "completion": "Carry it lightly.",
+    "soundtrack_query": "introspective instrumental"
+  },
+  {
+    "title": "One Brave Text",
+    "vibe": "Social courage",
+    "fallback_for": ["social", "energetic"],
+    "steps": [
+      "Think of someone supportive.",
+      "Send a short check-in.",
+      "Keep it simple."
+    ],
+    "twist": "Add one sincere compliment.",
+    "completion": "Let it go.",
+    "soundtrack_query": "uplifting acoustic"
+  },
+  {
+    "title": "Five-Step Walk",
+    "vibe": "Micro adventure",
+    "fallback_for": ["energetic", "curious"],
+    "steps": [
+      "Walk five slow steps.",
+      "Pause intentionally.",
+      "Turn once."
+    ],
+    "twist": "Imagine a hidden portal.",
+    "completion": "Return normally.",
+    "soundtrack_query": "light adventure soundtrack"
+  },
+  {
+    "title": "Creative Title",
+    "vibe": "Playful imagination",
+    "fallback_for": ["creative", "playful"],
+    "steps": [
+      "Imagine today as a movie.",
+      "Write its title.",
+      "Add one dramatic subtitle."
+    ],
+    "twist": "Change the genre.",
+    "completion": "Smile at your creativity.",
+    "soundtrack_query": "cinematic theme music"
+  },
+  {
+    "title": "Breath + Name",
+    "vibe": "Gentle reset",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Take one slow breath.",
+      "Name something nearby.",
+      "Take another slow breath."
+    ],
+    "twist": "Say it like a poet.",
+    "completion": "Relax your jaw gently.",
+    "soundtrack_query": "soft ambient soundscape"
+  },
+  {
+    "title": "Micro Victory",
+    "vibe": "Productive spark",
+    "fallback_for": ["energetic", "medium"],
+    "steps": [
+      "Choose one tiny task.",
+      "Complete it immediately.",
+      "Acknowledge it clearly."
+    ],
+    "twist": "Celebrate silently.",
+    "completion": "Move on confidently.",
+    "soundtrack_query": "motivational background music"
+  },
+  {
+    "title": "Shadow Stretch",
+    "vibe": "Body awareness",
+    "fallback_for": ["calm", "energetic"],
+    "steps": [
+      "Stretch your arms upward.",
+      "Lean gently sideways.",
+      "Notice how your back feels."
+    ],
+    "twist": "Move slowly like water.",
+    "completion": "Stand neutrally.",
+    "soundtrack_query": "calm movement instrumental"
+  },
+  {
+    "title": "Name Three Futures",
+    "vibe": "Imaginative reflection",
+    "fallback_for": ["reflective", "creative"],
+    "steps": [
+      "Imagine tomorrow.",
+      "Name three possible moments.",
+      "Pick your favourite."
+    ],
+    "twist": "Give it a dramatic title.",
+    "completion": "Smile at the possibility.",
+    "soundtrack_query": "cinematic ambient"
+  },
+  {
+    "title": "Weird Angle",
+    "vibe": "Curious disruption",
+    "fallback_for": ["curious", "playful"],
+    "steps": [
+      "Look at something upside down.",
+      "Notice one new detail.",
+      "Rotate back slowly."
+    ],
+    "twist": "Pretend it’s alien tech.",
+    "completion": "Blink twice.",
+    "soundtrack_query": "quirky experimental music"
+  },
+  {
+    "title": "Compliment Yourself",
+    "vibe": "Warm reflection",
+    "fallback_for": ["reflective", "calm"],
+    "steps": [
+      "Think of one strength.",
+      "Say it quietly.",
+      "Repeat once."
+    ],
+    "twist": "Add ‘today’ at the end.",
+    "completion": "Stand a little taller.",
+    "soundtrack_query": "gentle acoustic music"
+  },
+  {
+    "title": "Mini Adventure Line",
+    "vibe": "Energetic curiosity",
+    "fallback_for": ["energetic", "curious"],
+    "steps": [
+      "Walk ten steps.",
+      "Pause intentionally.",
+      "Look around slowly."
+    ],
+    "twist": "Imagine dramatic music.",
+    "completion": "Return normally.",
+    "soundtrack_query": "light adventure soundtrack"
+  },
+  {
+    "title": "Five-Word Poem",
+    "vibe": "Creative calm",
+    "fallback_for": ["creative", "calm"],
+    "steps": [
+      "Look around you.",
+      "Write five descriptive words.",
+      "Arrange them creatively."
+    ],
+    "twist": "Swap one word unexpectedly.",
+    "completion": "Read it softly.",
+    "soundtrack_query": "soft piano instrumental"
+  },
+  {
+    "title": "Random Appreciation",
+    "vibe": "Warm curiosity",
+    "fallback_for": ["social", "curious"],
+    "steps": [
+      "Choose a random object.",
+      "List two things you like about it.",
+      "Say thank you."
+    ],
+    "twist": "Pretend it heard you.",
+    "completion": "Move on lightly.",
+    "soundtrack_query": "feel good indie"
+  },
+  {
+    "title": "Power Posture",
+    "vibe": "Confident energy",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Stand tall.",
+      "Roll shoulders back.",
+      "Hold for ten seconds."
+    ],
+    "twist": "Imagine spotlight lighting.",
+    "completion": "Relax naturally.",
+    "soundtrack_query": "empowering anthem"
+  },
+  {
+    "title": "Silent Minute",
+    "vibe": "Grounded awareness",
+    "fallback_for": ["calm", "reflective"],
+    "steps": [
+      "Sit quietly.",
+      "Set a one-minute timer.",
+      "Notice your breathing."
+    ],
+    "twist": "Count your exhales.",
+    "completion": "Stretch fingers gently.",
+    "soundtrack_query": "minimal ambient"
+  },
+  {
+    "title": "Invent a Gesture",
+    "vibe": "Playful creativity",
+    "fallback_for": ["playful", "creative"],
+    "steps": [
+      "Create a hand gesture.",
+      "Name it dramatically.",
+      "Perform it once."
+    ],
+    "twist": "Pretend it summons luck.",
+    "completion": "Smile subtly.",
+    "soundtrack_query": "quirky upbeat instrumental"
+  },
+  {
+    "title": "Three Slow Steps",
+    "vibe": "Mindful movement",
+    "fallback_for": ["calm", "medium"],
+    "steps": [
+      "Take three slow steps.",
+      "Notice your balance.",
+      "Pause fully."
+    ],
+    "twist": "Imagine invisible floor lights.",
+    "completion": "Stand comfortably.",
+    "soundtrack_query": "ambient cinematic music"
+  },
+  {
+    "title": "Mini Gratitude Text",
+    "vibe": "Warm connection",
+    "fallback_for": ["social", "reflective"],
+    "steps": [
+      "Think of someone kind.",
+      "Send one short message.",
+      "Keep it sincere."
+    ],
+    "twist": "Add one emoji.",
+    "completion": "Put phone away.",
+    "soundtrack_query": "soft indie acoustic"
+  },
+  {
+    "title": "Unexpected Detail",
+    "vibe": "Curious focus",
+    "fallback_for": ["curious", "medium"],
+    "steps": [
+      "Scan your room slowly.",
+      "Find one tiny detail.",
+      "Study it closely."
+    ],
+    "twist": "Imagine it’s important.",
+    "completion": "Blink twice.",
+    "soundtrack_query": "lofi focus music"
+  },
+  {
+    "title": "Name the Chapter",
+    "vibe": "Reflective imagination",
+    "fallback_for": ["reflective", "creative"],
+    "steps": [
+      "Imagine today as a book.",
+      "Name this chapter.",
+      "Add a subtitle."
+    ],
+    "twist": "Make it slightly dramatic.",
+    "completion": "Continue your day.",
+    "soundtrack_query": "cinematic storytelling music"
+  },
+  {
+    "title": "Ten Second Jump",
+    "vibe": "Energetic burst",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Jump lightly for ten seconds.",
+      "Take one deep breath.",
+      "Smile."
+    ],
+    "twist": "Pretend confetti fell.",
+    "completion": "Stand still briefly.",
+    "soundtrack_query": "energetic dance music"
+  },
+  {
+    "title": "New Angle Seat",
+    "vibe": "Curious reset",
+    "fallback_for": ["curious", "calm"],
+    "steps": [
+      "Sit somewhere different.",
+      "Notice how it feels.",
+      "Adjust once."
+    ],
+    "twist": "Imagine it’s a control room.",
+    "completion": "Return normally.",
+    "soundtrack_query": "ambient background music"
+  },
+  {
+    "title": "Micro Doodle",
+    "vibe": "Creative ease",
+    "fallback_for": ["creative", "calm"],
+    "steps": [
+      "Draw one quick shape.",
+      "Add two details.",
+      "Give it a name."
+    ],
+    "twist": "Pretend it’s famous.",
+    "completion": "Put it somewhere visible.",
+    "soundtrack_query": "chill instrumental"
+  },
+  {
+    "title": "Five Calm Breaths",
+    "vibe": "Grounded focus",
+    "fallback_for": ["calm", "low"],
+    "steps": [
+      "Inhale slowly.",
+      "Exhale slowly.",
+      "Repeat five times."
+    ],
+    "twist": "Imagine clearing fog.",
+    "completion": "Open your eyes gently.",
+    "soundtrack_query": "meditation ambient music"
+  },
+  {
+    "title": "Main Character Entrance",
+    "vibe": "Cinematic energy",
+    "fallback_for": ["energetic", "chaotic", "high"],
+    "steps": [
+      "Leave the room.",
+      "Re-enter dramatically.",
+      "Walk like you own the scene."
+    ],
+    "twist": "Imagine slow motion.",
+    "completion": "Nod subtly.",
+    "soundtrack_query": "epic entrance music"
+  },
+  {
+    "title": "Chaos Countdown",
+    "vibe": "Playful intensity",
+    "fallback_for": ["energetic", "chaotic"],
+    "steps": [
+      "Count down from ten loudly.",
+      "Clap once at zero.",
+      "Strike a pose."
+    ],
+    "twist": "Pretend the world paused.",
+    "completion": "Resume normally.",
+    "soundtrack_query": "dramatic build up music"
+  },
+  {
+    "title": "Spin Decision",
+    "vibe": "Chaotic curiosity",
+    "fallback_for": ["chaotic", "playful"],
+    "steps": [
+      "Spin once carefully.",
+      "Stop facing somewhere random.",
+      "Walk five steps."
+    ],
+    "twist": "Pretend fate chose it.",
+    "completion": "Laugh softly.",
+    "soundtrack_query": "quirky upbeat track"
+  },
+  {
+    "title": "Hype Yourself",
+    "vibe": "Confident fire",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Say your name confidently.",
+      "Add one powerful adjective.",
+      "Repeat louder."
+    ],
+    "twist": "Point at imaginary crowd.",
+    "completion": "Take one deep breath.",
+    "soundtrack_query": "empowerment anthem"
+  },
+  {
+    "title": "Speed Clean Sprint",
+    "vibe": "Controlled chaos",
+    "fallback_for": ["energetic", "medium"],
+    "steps": [
+      "Set 60-second timer.",
+      "Tidy one small area fast.",
+      "Stop immediately."
+    ],
+    "twist": "Call it a speedrun.",
+    "completion": "Admire briefly.",
+    "soundtrack_query": "fast electronic beat"
+  },
+  {
+    "title": "Jump Cut",
+    "vibe": "Kinetic spark",
+    "fallback_for": ["energetic", "chaotic"],
+    "steps": [
+      "Jump lightly once.",
+      "Turn sharply.",
+      "Clap once."
+    ],
+    "twist": "Pretend it’s a scene cut.",
+    "completion": "Freeze for two seconds.",
+    "soundtrack_query": "hyper pop energy"
+  },
+  {
+    "title": "Alter Ego Activation",
+    "vibe": "Playful drama",
+    "fallback_for": ["playful", "energetic"],
+    "steps": [
+      "Choose a new name.",
+      "Adopt matching posture.",
+      "Say one bold line."
+    ],
+    "twist": "Add a secret backstory.",
+    "completion": "Deactivate calmly.",
+    "soundtrack_query": "cinematic hero theme"
+  },
+  {
+    "title": "Room Sprint",
+    "vibe": "High movement",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Walk quickly across room.",
+      "Touch one surface.",
+      "Return confidently."
+    ],
+    "twist": "Pretend it was urgent.",
+    "completion": "Slow your breathing.",
+    "soundtrack_query": "fast paced soundtrack"
+  },
+  {
+    "title": "Wild Gesture",
+    "vibe": "Expressive chaos",
+    "fallback_for": ["chaotic", "playful"],
+    "steps": [
+      "Invent a big hand gesture.",
+      "Perform it dramatically.",
+      "Name it."
+    ],
+    "twist": "Pretend it summons energy.",
+    "completion": "Relax shoulders.",
+    "soundtrack_query": "quirky electronic"
+  },
+  {
+    "title": "Power Stomp",
+    "vibe": "Grounded intensity",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Stomp once firmly.",
+      "Clench fists briefly.",
+      "Release slowly."
+    ],
+    "twist": "Imagine shockwaves.",
+    "completion": "Stand tall.",
+    "soundtrack_query": "epic cinematic beat"
+  },
+  {
+    "title": "Five Fast Facts",
+    "vibe": "Rapid thinking",
+    "fallback_for": ["energetic", "curious"],
+    "steps": [
+      "Name five random facts.",
+      "Say them quickly.",
+      "Laugh at one."
+    ],
+    "twist": "Make one slightly absurd.",
+    "completion": "Shake arms out.",
+    "soundtrack_query": "upbeat indie rock"
+  },
+  {
+    "title": "Countdown Move",
+    "vibe": "Playful momentum",
+    "fallback_for": ["energetic", "medium"],
+    "steps": [
+      "Count down from five.",
+      "Move at zero.",
+      "Freeze dramatically."
+    ],
+    "twist": "Pretend cameras flashed.",
+    "completion": "Reset normally.",
+    "soundtrack_query": "dance pop beat"
+  },
+  {
+    "title": "Bold Walk",
+    "vibe": "Confident motion",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Walk ten bold steps.",
+      "Maintain eye focus.",
+      "Turn sharply."
+    ],
+    "twist": "Imagine theme music playing.",
+    "completion": "Relax posture.",
+    "soundtrack_query": "main character playlist"
+  },
+  {
+    "title": "Instant Applause",
+    "vibe": "Playful drama",
+    "fallback_for": ["playful", "energetic"],
+    "steps": [
+      "Clap three times loudly.",
+      "Bow slightly.",
+      "Smile confidently."
+    ],
+    "twist": "Pretend audience cheered.",
+    "completion": "Stand casually.",
+    "soundtrack_query": "celebration music"
+  },
+  {
+    "title": "Micro Obstacle",
+    "vibe": "Chaotic fun",
+    "fallback_for": ["chaotic", "energetic"],
+    "steps": [
+      "Place one object down.",
+      "Step around it dramatically.",
+      "Announce victory."
+    ],
+    "twist": "Call it Level One.",
+    "completion": "Move on.",
+    "soundtrack_query": "video game soundtrack"
+  },
+  {
+    "title": "Rapid Reset",
+    "vibe": "High-energy reset",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Shake your hands fast.",
+      "Roll neck gently.",
+      "Inhale deeply."
+    ],
+    "twist": "Imagine reboot complete.",
+    "completion": "Stand grounded.",
+    "soundtrack_query": "electronic build drop"
+  },
+  {
+    "title": "Hero Turn",
+    "vibe": "Cinematic confidence",
+    "fallback_for": ["energetic", "playful"],
+    "steps": [
+      "Turn slowly.",
+      "Look over shoulder.",
+      "Nod once."
+    ],
+    "twist": "Pretend dramatic lighting.",
+    "completion": "Walk normally.",
+    "soundtrack_query": "cinematic hero music"
+  },
+  {
+    "title": "Chaotic Choice",
+    "vibe": "Random spark",
+    "fallback_for": ["chaotic", "curious"],
+    "steps": [
+      "Pick left or right randomly.",
+      "Move that direction briefly.",
+      "Notice what changed."
+    ],
+    "twist": "Call it destiny.",
+    "completion": "Return if needed.",
+    "soundtrack_query": "indie alt rock"
+  },
+  {
+    "title": "Ten Second Sprint",
+    "vibe": "Adrenaline burst",
+    "fallback_for": ["energetic", "high"],
+    "steps": [
+      "Move quickly for ten seconds.",
+      "Stop suddenly.",
+      "Laugh softly."
+    ],
+    "twist": "Pretend race completed.",
+    "completion": "Catch your breath.",
+    "soundtrack_query": "high energy workout"
+  },
+  {
+    "title": "Glitch Moment",
+    "vibe": "Playful chaos",
+    "fallback_for": ["chaotic", "playful"],
+    "steps": [
+      "Move robotically for five seconds.",
+      "Freeze abruptly.",
+      "Reset smoothly."
+    ],
+    "twist": "Pretend reality glitched.",
+    "completion": "Return to normal.",
+    "soundtrack_query": "electronic glitch music"
+  }
+]
+
+
+
+

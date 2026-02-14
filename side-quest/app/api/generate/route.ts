@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import offlineQuestCatalog from "@/app/lib/offline-quests.json";
 export const dynamic = "force-dynamic";
 
 type Energy = "low" | "medium" | "high";
@@ -24,7 +25,13 @@ type Quest = {
   soundtrack_query: string;
 };
 
+type OfflineQuest = Quest & {
+  fallback_for: string[];
+};
+
 const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const offlineQuests = offlineQuestCatalog as OfflineQuest[];
+let lastOfflineTitle: string | null = null;
 
 const questSchema = {
   type: "object",
@@ -74,10 +81,11 @@ export async function POST(req: Request) {
       }
 
       if (isDev) {
-        console.warn(`[/api/generate][${requestId}] missing OPENAI_API_KEY in development; returning fallback quest.`);
+        console.warn(`[/api/generate][${requestId}] missing OPENAI_API_KEY in development; using offline fallback.`);
       }
-      headers.set("X-Generation-Path", "fallback-missing-key");
-      return NextResponse.json(fallbackQuest(input, requestId), { headers });
+      const selected = selectOfflineFallback(input, requestId);
+      headers.set("X-Generation-Path", "offline-fallback-missing-key");
+      return NextResponse.json(selected.quest, { headers });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -158,7 +166,7 @@ async function generateQuest(openai: OpenAI, input: GenerateInput, requestId: st
   }
 
   return {
-    quest: fallbackQuest(input, requestId),
+    quest: selectOfflineFallback(input, requestId).quest,
     path: "fallback",
     debug: {
       primaryParsed: false,
@@ -304,68 +312,104 @@ function normalizeLine(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function fallbackQuest(input: GenerateInput, requestId = "fallback"): Quest {
-  const variantIndex = hashToIndex(requestId, 3);
-  const sensoryVariants = input.lowSensory
-    ? [
-        "Choose a quiet, low-light spot and keep sounds gentle.",
-        "Find a calm corner with soft light and minimal noise.",
-        "Pick a low-sensory space and keep things gentle.",
-      ]
-    : [
-        "Choose a comfortable place that matches your mood.",
-        "Find a spot that feels right for this chapter.",
-        "Pick a nearby place that feels easy and inviting.",
-      ];
-  const socialVariants =
-    input.social === "social"
-      ? [
-          "Invite one trusted person for ten calm minutes.",
-          "Ask a friend to join briefly for this moment.",
-          "Share this side quest with one safe person.",
-        ]
-      : [
-          "Keep it solo with no required interactions.",
-          "Run this one as a solo chapter.",
-          "Make this a fully solo side quest.",
-        ];
-  const spendVariants = input.noSpend
-    ? [
-        "Use what you already have. Spend nothing.",
-        "Work with what is already around you.",
-        "No purchases needed for this quest.",
-      ]
-    : [
-        "Optional: bring a small cozy treat.",
-        "Optional: add one tiny comfort item.",
-        "Optional: grab one low-cost mood boost.",
-      ];
-  const soundtrackVariants = [
-    "cinematic cozy mystery lofi",
-    "indie daydream color pop playlist",
-    "warm cinematic curious adventure",
-  ];
+function selectOfflineFallback(
+  input: GenerateInput,
+  requestId: string,
+): { quest: Quest; title: string; score: number } {
+  if (!offlineQuests.length) {
+    const emergency = emergencyFallback(input);
+    return { quest: emergency, title: emergency.title, score: 0 };
+  }
 
+  const scored = offlineQuests.map((quest) => ({
+    quest,
+    score: scoreOfflineQuest(quest, input),
+  }));
+
+  const positive = scored.filter((entry) => entry.score > 0);
+  const pool = positive.length ? positive : scored.map((entry) => ({ ...entry, score: 1 }));
+
+  let pick = weightedPick(pool);
+  let attempts = 0;
+  while (lastOfflineTitle && pick.quest.title === lastOfflineTitle && attempts < 3 && pool.length > 1) {
+    attempts += 1;
+    pick = weightedPick(pool);
+  }
+
+  lastOfflineTitle = pick.quest.title;
+  const questContract: Quest = {
+    title: pick.quest.title,
+    vibe: pick.quest.vibe,
+    steps: pick.quest.steps,
+    twist: pick.quest.twist,
+    completion: pick.quest.completion,
+    soundtrack_query: pick.quest.soundtrack_query,
+  };
+
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[offline-fallback] selected:",
+      pick.quest.title,
+      "score:",
+      pick.score,
+      "requestId:",
+      requestId,
+    );
+  }
+
+  return { quest: questContract, title: pick.quest.title, score: pick.score };
+}
+
+function scoreOfflineQuest(quest: OfflineQuest, input: GenerateInput): number {
+  const tags = new Set(quest.fallback_for.map((tag) => tag.toLowerCase()));
+  const mood = input.mood.toLowerCase();
+  let score = 0;
+
+  if (tags.has(input.energy)) score += 3;
+  if (tags.has("social") && input.social === "social") score += 2;
+  if (tags.has("calm") && (input.energy === "low" || input.lowSensory)) score += 2;
+  if (tags.has("chaotic") && input.chaos >= 7) score += 2;
+  if (tags.has("energetic") && input.energy === "high") score += 2;
+  if (tags.has("curious") && moodIncludesAny(mood, ["curious", "bored", "restless", "explore"])) score += 1;
+  if (tags.has("creative") && moodIncludesAny(mood, ["creative", "idea", "make", "draw"])) score += 1;
+  if (tags.has("reflective") && moodIncludesAny(mood, ["overwhelmed", "sad", "tired", "thoughtful"])) score += 1;
+
+  if (input.lowSensory && tags.has("chaotic") && input.chaos < 8) score -= 3;
+  return score;
+}
+
+function moodIncludesAny(mood: string, words: string[]): boolean {
+  return words.some((word) => mood.includes(word));
+}
+
+function weightedPick(
+  entries: Array<{ quest: OfflineQuest; score: number }>,
+): { quest: OfflineQuest; score: number } {
+  const total = entries.reduce((sum, entry) => sum + Math.max(1, entry.score), 0);
+  const rng = Math.random() * total;
+  let cursor = 0;
+
+  for (const entry of entries) {
+    cursor += Math.max(1, entry.score);
+    if (rng <= cursor) return entry;
+  }
+
+  return entries[entries.length - 1];
+}
+
+function emergencyFallback(input: GenerateInput): Quest {
   return {
     title: "Main Character: Tiny Mystery Route",
     vibe: `A ${input.mood} energy quest tuned for ${input.time_available}.`,
     steps: [
-      sensoryVariants[variantIndex],
-      `${socialVariants[variantIndex]} ${spendVariants[variantIndex]}`.trim(),
-      "Take a short walk, capture one photo, then write one clue sentence.",
+      "Choose one nearby place that feels safe and easy.",
+      "Capture one photo and write one clue about this moment.",
+      "Save the clue and pick one tiny next action.",
     ],
-    twist: "Treat the photo as a clue from your future self, Main Character.",
-    completion: "Quest complete when you save the clue and summarize the moment in one sentence.",
-    soundtrack_query: soundtrackVariants[variantIndex],
+    twist: "Treat this clue as a message from your future self.",
+    completion: "Done when the clue is saved and your next action is written.",
+    soundtrack_query: "cinematic cozy mystery lofi",
   };
-}
-
-function hashToIndex(value: string, modulo: number): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
-  }
-  return hash % modulo;
 }
 
 function responseHeaders(requestId: string): Headers {
