@@ -395,7 +395,7 @@ export default function QuestPage() {
             aria-label="Save this quest to history"
             className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
           >
-            {isQuestSaved ? <CheckIcon /> : <SaveIcon />}
+            {isQuestSaved ? <UnsaveIcon /> : <SaveIcon />}
             {isQuestSaved ? "Unsave" : "Save"}
           </button>
         </section>
@@ -520,7 +520,7 @@ function SaveIcon() {
   );
 }
 
-function CheckIcon() {
+function UnsaveIcon() {
   return (
     <svg
       aria-hidden="true"
@@ -532,7 +532,10 @@ function CheckIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="m5 12 4 4 10-10" />
+      <path d="M6 3h9l3 3v15H6z" />
+      <path d="M9 3v6h6V3" />
+      <path d="m9 15 6 6" />
+      <path d="m15 15-6 6" />
     </svg>
   );
 }
