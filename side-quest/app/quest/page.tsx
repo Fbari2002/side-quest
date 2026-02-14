@@ -70,17 +70,28 @@ export default function QuestPage() {
   }
 
   async function submitQuest() {
+    const requestAt = new Date().toISOString();
+    if (process.env.NODE_ENV !== "production") {
+      console.info(`[quest] submit clicked at ${requestAt}`);
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sidequest-request-at": requestAt,
+          "x-sidequest-cache-bust": requestAt,
+        },
         body: JSON.stringify(form),
       });
 
       const data = (await response.json()) as Quest | { error?: string };
+      const requestId = response.headers.get("x-request-id");
 
       if (!response.ok || !("title" in data)) {
         const err = "error" in data ? data.error : undefined;
@@ -88,6 +99,9 @@ export default function QuestPage() {
       }
 
       setQuest(data);
+      if (process.env.NODE_ENV !== "production") {
+        console.info(`[quest] response ${requestId ?? "n/a"} title: ${data.title}`);
+      }
       showToast("Quest ready ✨");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong.";
