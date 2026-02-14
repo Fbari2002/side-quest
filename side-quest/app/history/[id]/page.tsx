@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import GlowCard from "@/components/GlowCard";
+import Sparkle from "@/components/Sparkle";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
 import { getQuestById, type SavedQuestEntry } from "@/lib/savedQuests";
 
@@ -11,6 +13,7 @@ export default function SavedQuestDetailPage() {
   const questId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const [saved, setSaved] = React.useState<SavedQuestEntry | null>(null);
   const [loaded, setLoaded] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
   const { toastMessage, showToast } = useToast(2500);
 
   React.useEffect(() => {
@@ -18,6 +21,11 @@ export default function SavedQuestDetailPage() {
     setSaved(getQuestById(questId));
     setLoaded(true);
   }, [questId]);
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setIsVisible(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const spotifyUrl = saved
     ? `https://open.spotify.com/search/${encodeURIComponent(saved.quest.soundtrack_query)}`
@@ -52,7 +60,7 @@ export default function SavedQuestDetailPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
+    <main className="page-enter mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
       <Link
         href="/history"
         aria-label="Back to quest history"
@@ -77,12 +85,18 @@ export default function SavedQuestDetailPage() {
       )}
 
       {saved && (
-        <section
+        <GlowCard
+          as="section"
           aria-live="polite"
-          className="main-card rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+          className={`main-card detail-reveal rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)] ${
+            isVisible ? "is-visible" : ""
+          }`}
         >
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Saved quest</p>
-          <h1 className="mt-2 text-2xl font-semibold leading-tight">{saved.quest.title}</h1>
+          <div className="mt-2 flex items-center gap-2">
+            <Sparkle />
+            <h1 className="text-2xl font-semibold leading-tight">{saved.quest.title}</h1>
+          </div>
           <p className="mt-2 text-sm text-[var(--muted)]">{saved.quest.vibe}</p>
 
           <div className="mt-4 space-y-4 text-sm">
@@ -119,7 +133,7 @@ export default function SavedQuestDetailPage() {
               Share quest
             </button>
           </div>
-        </section>
+        </GlowCard>
       )}
 
       <Toast message={toastMessage} />

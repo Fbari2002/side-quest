@@ -2,6 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import GlowButton from "@/components/GlowButton";
+import GlowCard from "@/components/GlowCard";
+import Sparkle from "@/components/Sparkle";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
 import {
   deleteQuest,
@@ -166,7 +169,7 @@ export default function QuestPage() {
     : "";
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
+    <main className="page-enter mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
       <div className="flex items-center justify-between gap-3">
         <Link
           href="/"
@@ -183,9 +186,15 @@ export default function QuestPage() {
         </Link>
       </div>
 
-      <section className="main-card rounded-3xl p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+      <GlowCard
+        as="section"
+        className="main-card rounded-3xl p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]"
+      >
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
-        <h1 className="mt-2 text-2xl font-semibold">Main Character Mode</h1>
+        <div className="mt-2 flex items-center gap-2">
+          <Sparkle />
+          <h1 className="text-2xl font-semibold">Main Character Mode</h1>
+        </div>
         <p className="mt-2 text-sm text-[var(--muted)]">
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
@@ -291,13 +300,13 @@ export default function QuestPage() {
               </label>
             </div>
 
-            <button
+            <GlowButton
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
+              className={`w-full ${!loading ? "pulse-idle" : ""}`}
             >
               {loading ? "Summoning…" : "Generate quest"}
-            </button>
+            </GlowButton>
           </fieldset>
 
           {error && (
@@ -326,7 +335,7 @@ export default function QuestPage() {
             </div>
           )}
         </form>
-      </section>
+      </GlowCard>
 
       {loading && <QuestCardSkeleton />}
 

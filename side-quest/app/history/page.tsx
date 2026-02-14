@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import GlowCard from "@/components/GlowCard";
 import { deleteQuest, getSaved, type SavedQuestEntry } from "@/lib/savedQuests";
 
 export default function HistoryPage() {
@@ -19,7 +20,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:py-10">
+    <main className="page-enter mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:py-10">
       <div className="flex items-center justify-between gap-3">
         <Link
           href="/quest"
@@ -62,15 +63,21 @@ export default function HistoryPage() {
       {saved.length > 0 && (
         <section className="grid gap-4 md:grid-cols-2">
           {saved.map((entry, index) => (
-            <article
+            <GlowCard
+              as="article"
               key={entry.id}
               className={`main-card rounded-3xl p-5 transition motion-safe:duration-200 motion-safe:hover:scale-[1.01] motion-safe:hover:shadow-[0_16px_36px_rgba(0,0,0,0.34)] motion-reduce:transition-none ${
                 index === 0
-                  ? "border-[rgba(246,196,83,0.35)] shadow-[0_0_0_1px_rgba(246,196,83,0.24),0_14px_34px_rgba(0,0,0,0.3)]"
+                  ? "border-[rgba(246,196,83,0.42)] shadow-[0_0_0_1px_rgba(246,196,83,0.26),0_0_32px_rgba(246,196,83,0.16),0_14px_34px_rgba(0,0,0,0.3)]"
                   : "shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
               }`}
             >
               <div className="flex flex-wrap items-center gap-2">
+                {index === 0 && (
+                  <span className="inline-flex rounded-full border border-[rgba(246,196,83,0.55)] bg-[rgba(246,196,83,0.12)] px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-[var(--warm)]">
+                    Newest ✨
+                  </span>
+                )}
                 <span className="inline-flex rounded-full border border-[var(--line)] bg-[#101729] px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-[var(--muted)]">
                   {entry.quest.vibe}
                 </span>
@@ -109,7 +116,7 @@ export default function HistoryPage() {
                   Delete
                 </button>
               </div>
-            </article>
+            </GlowCard>
           ))}
         </section>
       )}

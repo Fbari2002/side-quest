@@ -1,4 +1,6 @@
 import Link from "next/link";
+import GlowButton from "@/components/GlowButton";
+import Sparkle from "@/components/Sparkle";
 
 const moods = [
   { label: "Calm", glow: "shadow-[0_0_0_1px_rgba(45,212,191,0.25),0_0_18px_rgba(45,212,191,0.12)]" },
@@ -9,12 +11,15 @@ const moods = [
 
 export default function LandingPage() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
+    <main className="page-enter mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
       <section className="main-card rounded-3xl p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
-        <h1 className="mt-2 text-[2.15rem] font-semibold leading-[1.12] sm:text-[2.35rem]">
-          Activate Main Character Mode.
-        </h1>
+        <div className="mt-2 flex items-start gap-2">
+          <Sparkle className="mt-1" />
+          <h1 className="text-[2.15rem] font-semibold leading-[1.12] sm:text-[2.35rem]">
+            Activate Main Character Mode.
+          </h1>
+        </div>
 
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
           Tiny, mood-matched side quests.
@@ -36,13 +41,9 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <Link
-          href="/quest"
-          className="group relative mt-5 inline-flex w-full items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:-translate-y-[1px] hover:brightness-[1.03] hover:shadow-[0_0_30px_rgba(246,196,83,0.3)] active:scale-[0.98] active:duration-150"
-        >
-          <span className="pointer-events-none absolute inset-y-0 -left-[36%] w-[34%] -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 transition duration-700 group-hover:translate-x-[420%] group-hover:opacity-100" />
-          <span className="relative z-10">Start a SideQuest</span>
-        </Link>
+        <GlowButton as={Link} href="/quest" className="mt-5 w-full">
+          Start a SideQuest
+        </GlowButton>
         <Link
           href="/history"
           className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:border-[var(--accent)]"

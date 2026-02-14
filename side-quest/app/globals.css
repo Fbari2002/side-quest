@@ -12,6 +12,11 @@
   --accent-2: #4f46e5;
   --warm: #f6c453;
   --warm-2: #fb7185;
+  --pulse-speed: 6s;
+  --drift-speed: 18s;
+  --glow-a: rgba(79, 70, 229, 0.35);
+  --glow-b: rgba(45, 212, 191, 0.35);
+  --glow-warm: rgba(251, 113, 133, 0.25);
 }
 
 * {
@@ -59,6 +64,8 @@ body {
   pointer-events: none;
   z-index: -2;
   overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
   background:
     repeating-linear-gradient(
       0deg,
@@ -83,6 +90,7 @@ body {
   pointer-events: none;
   z-index: -2;
   will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .bg-layer::before {
@@ -104,7 +112,7 @@ body {
       rgba(246, 196, 83, 0.06),
       rgba(79, 70, 229, 0)
     );
-  animation: driftA 20s ease-in-out infinite alternate;
+  animation: driftA var(--drift-speed) ease-in-out infinite alternate;
 }
 
 .bg-layer::after {
@@ -122,7 +130,7 @@ body {
   mix-blend-mode: screen;
   filter: blur(0.22px);
   opacity: 0.2;
-  animation: driftB 24s ease-in-out infinite alternate;
+  animation: driftB calc(var(--drift-speed) + 6s) ease-in-out infinite alternate;
 }
 
 @supports not (mix-blend-mode: screen) {
@@ -169,18 +177,6 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bg-layer,
-  .bg-layer::before,
-  .bg-layer::after {
-    animation: none;
-  }
-
-  .result-reveal {
-    animation: none;
-  }
-}
-
 /* Verification tip: in local dev, temporarily set driftA/driftB to 6s to confirm movement. */
 
 .main-card {
@@ -192,7 +188,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.main-card::before {
+.main-card::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -210,6 +206,80 @@ body {
   mask-composite: exclude;
   pointer-events: none;
   z-index: -1;
+}
+
+.page-enter {
+  animation: pageFadeIn 360ms ease-out both;
+}
+
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  left: -34%;
+  width: 34%;
+  pointer-events: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.24),
+    rgba(255, 255, 255, 0)
+  );
+  opacity: 0.18;
+  transform: translateX(0) skewX(-12deg);
+  animation: sheenSlide calc(var(--pulse-speed) + 2s) linear infinite;
+}
+
+.glow-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -42%;
+  width: 40%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.38),
+    rgba(255, 255, 255, 0)
+  );
+  transform: translateX(0) skewX(-14deg);
+  animation: buttonShimmer calc(var(--pulse-speed) + 1s) linear infinite;
+}
+
+.glow-button:active {
+  transform: scale(0.98);
+}
+
+.sparkle-pulse {
+  animation: sparklePulse var(--pulse-speed) ease-in-out infinite;
+}
+
+.pulse-idle {
+  animation: idlePulse var(--pulse-speed) ease-in-out infinite;
+}
+
+.detail-reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+.detail-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 input,
@@ -231,5 +301,108 @@ button {
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheenSlide {
+  0% {
+    transform: translateX(0) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(360%) skewX(-12deg);
+  }
+}
+
+@keyframes buttonShimmer {
+  0% {
+    transform: translateX(0) skewX(-14deg);
+  }
+  100% {
+    transform: translateX(380%) skewX(-14deg);
+  }
+}
+
+@keyframes sparklePulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes idlePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(246, 196, 83, 0);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(246, 196, 83, 0.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .bg-layer::before {
+    inset: -7vmax;
+    background:
+      radial-gradient(42% 38% at 8% 12%, var(--glow-a), rgba(79, 70, 229, 0) 58%),
+      radial-gradient(42% 38% at 92% 16%, var(--glow-b), rgba(45, 212, 191, 0) 58%),
+      radial-gradient(46% 40% at 78% 88%, var(--glow-warm), rgba(251, 113, 133, 0) 62%),
+      radial-gradient(44% 38% at 12% 84%, rgba(246, 196, 83, 0.2), rgba(246, 196, 83, 0) 60%);
+  }
+
+  .bg-layer::after {
+    filter: blur(0.12px);
+    opacity: 0.14;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(246, 196, 83, 0.62) 0 2px, rgba(246, 196, 83, 0) 5px),
+      radial-gradient(circle at 34% 68%, rgba(45, 212, 191, 0.62) 0 2px, rgba(45, 212, 191, 0) 5px),
+      radial-gradient(circle at 62% 26%, rgba(251, 113, 133, 0.62) 0 2px, rgba(251, 113, 133, 0) 5px),
+      radial-gradient(circle at 88% 78%, rgba(79, 70, 229, 0.62) 0 2px, rgba(79, 70, 229, 0) 5px);
+  }
+}
+
+.debug-motion .bg-layer,
+.debug-motion .bg-layer::before,
+.debug-motion .bg-layer::after,
+.debug-motion .glow-card::before,
+.debug-motion .glow-button::after,
+.debug-motion .sparkle-pulse,
+.debug-motion .pulse-idle {
+  animation-duration: 2s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-layer,
+  .bg-layer::before,
+  .bg-layer::after,
+  .result-reveal,
+  .page-enter,
+  .glow-card::before,
+  .glow-button::after,
+  .sparkle-pulse,
+  .pulse-idle {
+    animation: none !important;
+  }
+
+  .detail-reveal,
+  .detail-reveal.is-visible {
+    transition: none;
+    transform: none;
+    opacity: 1;
   }
 }
