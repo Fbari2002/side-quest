@@ -101,3 +101,81 @@ Alive.
 - No overly smooth gradient wash.
 - Background should feel alive and colourful.
 
+## Build Priorities (v1 ship today)
+
+### Must work end-to-end
+1) AI quest generation works via server API route (no client keys).
+2) Result renders as a shareable card (title, vibe, steps, twist, completion).
+3) Spotify link button works (opens Spotify search for soundtrack_query).
+4) Share button works (Web Share API on mobile; fallback to copy to clipboard).
+
+### UX polish (do not overbuild)
+- Loading state: “Activating Main Character Mode…” + disable inputs.
+- Friendly error state (retry).
+- Smooth reveal animation for result card.
+
+## AI Integration (non-negotiable)
+
+### Endpoint
+- Use Next.js App Router route: `/api/generate` (POST).
+- API key stored in env var: `OPENAI_API_KEY`.
+- Never expose keys client-side.
+
+### Request body (from client)
+{
+"mood": "curious",
+"time_available": "45 minutes",
+"energy": "low|medium|high",
+"social": "solo|social",
+"chaos": 0-10,
+"noSpend": true|false,
+"lowSensory": true|false
+}
+
+### Response (strict JSON)
+Return JSON ONLY in this shape:
+{
+"title": "…",
+"vibe": "…",
+"steps": ["…","…","…"],
+"twist": "…",
+"completion": "…",
+"soundtrack_query": "…"
+}
+
+Rules:
+- Exactly 3 steps max. Each step < 20 words.
+- Clear completion condition.
+- Respect toggles:
+  - noSpend=true => no paid suggestions
+  - lowSensory=true => avoid crowds/loud/bright/intense social
+  - social=solo => no required interactions
+- Safe + legal (no dangerous tasks).
+
+### Reliability
+- Enforce JSON-only output (use schema/structured output if available; else robust parsing + one retry).
+- If parsing fails, return a safe fallback quest.
+
+## Result Card (v1)
+
+- Displays:
+  - Title (largest)
+  - Vibe (small)
+  - Steps (numbered list or chips)
+  - Twist (labelled “Plot twist”)
+  - Completion (labelled “To complete”)
+- Actions:
+  - 🎧 Play the vibe (Spotify search)
+  - Share quest (Web Share / clipboard)
+
+## App Icon / Branding (v1)
+
+- App name: SideQuest
+- Add app icon files in /public:
+  - icon.png (512x512)
+  - apple-touch-icon.png (180x180)
+- Metadata in `app/layout.tsx`:
+  - title "SideQuest"
+  - themeColor dark
+  - icons configured
+- Optional: `manifest.webmanifest` with display: standalone
