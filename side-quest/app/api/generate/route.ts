@@ -60,11 +60,13 @@ export async function POST(req: Request) {
       if (isDev) {
         console.warn(`[/api/generate][${requestId}] validation failed: ${validationError}`);
       }
+      headers.set("X-Generation-Path", "validation-error");
       return NextResponse.json({ error: validationError }, { status: 400, headers });
     }
 
     if (!process.env.OPENAI_API_KEY) {
       if (process.env.NODE_ENV === "production") {
+        headers.set("X-Generation-Path", "missing-key");
         return NextResponse.json(
           { error: "Server misconfigured: missing OPENAI_API_KEY" },
           { status: 500, headers },
@@ -74,14 +76,18 @@ export async function POST(req: Request) {
       if (isDev) {
         console.warn(`[/api/generate][${requestId}] missing OPENAI_API_KEY in development; returning fallback quest.`);
       }
+      headers.set("X-Generation-Path", "fallback-missing-key");
       return NextResponse.json(fallbackQuest(input, requestId), { headers });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const result = await generateQuest(openai, input, requestId);
     if (isDev) {
-      console.info(`[/api/generate][${requestId}] generation path: ${result.path}`);
+      console.info(
+        `[/api/generate][${requestId}] generation path: ${result.path}; primaryParsed=${result.debug.primaryParsed}; primaryRawLen=${result.debug.primaryRawLength}; repairParsed=${result.debug.repairParsed}; repairRawLen=${result.debug.repairRawLength}`,
+      );
     }
+    headers.set("X-Generation-Path", result.path);
     return NextResponse.json(result.quest, { headers });
   } catch {
     if (isDev) {
@@ -103,32 +109,71 @@ function validateInput(input: GenerateInput): string | null {
   return null;
 }
 
-async function generateQuest(
-  openai: OpenAI,
-  input: GenerateInput,
-  requestId: string,
-): Promise<{ quest: Quest; path: "primary" | "repair" | "fallback" }> {
+async function generateQuest(openai: OpenAI, input: GenerateInput, requestId: string): Promise<{
+  quest: Quest;
+  path: "primary" | "repair" | "fallback";
+  debug: {
+    primaryParsed: boolean;
+    primaryRawLength: number;
+    repairParsed: boolean;
+    repairRawLength: number;
+  };
+}> {
   const firstAttempt = await createStructuredQuest(
     openai,
     generationPrompt(input, requestId),
     requestId,
+    "primary",
   );
-  if (firstAttempt.quest) return { quest: firstAttempt.quest, path: "primary" };
+  if (firstAttempt.quest) {
+    return {
+      quest: firstAttempt.quest,
+      path: "primary",
+      debug: {
+        primaryParsed: true,
+        primaryRawLength: firstAttempt.raw.length,
+        repairParsed: false,
+        repairRawLength: 0,
+      },
+    };
+  }
 
   const secondAttempt = await createStructuredQuest(
     openai,
     repairPrompt(firstAttempt.raw || "No valid JSON received."),
     requestId,
+    "repair",
   );
-  if (secondAttempt.quest) return { quest: secondAttempt.quest, path: "repair" };
+  if (secondAttempt.quest) {
+    return {
+      quest: secondAttempt.quest,
+      path: "repair",
+      debug: {
+        primaryParsed: false,
+        primaryRawLength: firstAttempt.raw.length,
+        repairParsed: true,
+        repairRawLength: secondAttempt.raw.length,
+      },
+    };
+  }
 
-  return { quest: fallbackQuest(input, requestId), path: "fallback" };
+  return {
+    quest: fallbackQuest(input, requestId),
+    path: "fallback",
+    debug: {
+      primaryParsed: false,
+      primaryRawLength: firstAttempt.raw.length,
+      repairParsed: false,
+      repairRawLength: secondAttempt.raw.length,
+    },
+  };
 }
 
 async function createStructuredQuest(
   openai: OpenAI,
   prompt: string,
   requestId: string,
+  phase: "primary" | "repair",
 ): Promise<{ quest: Quest | null; raw: string }> {
   const isDev = process.env.NODE_ENV !== "production";
   try {
@@ -155,10 +200,16 @@ async function createStructuredQuest(
 
     const raw =
       (response.output_text || extractTextFromOutput(response.output as unknown[]) || "").trim();
+    if (isDev) {
+      const outputCount = Array.isArray(response.output) ? response.output.length : 0;
+      console.info(
+        `[/api/generate][${requestId}] ${phase} response received: rawLen=${raw.length}; outputItems=${outputCount}`,
+      );
+    }
     const parsed = parseQuest(raw);
     if (isDev && !parsed) {
       console.warn(
-        `[/api/generate][${requestId}] parse failed. Raw output: ${
+        `[/api/generate][${requestId}] ${phase} parse failed. Raw output: ${
           raw ? raw.slice(0, 500) : "(empty)"
         }`,
       );
@@ -167,7 +218,7 @@ async function createStructuredQuest(
   } catch (error) {
     if (isDev) {
       const message = error instanceof Error ? error.message : "Unknown OpenAI error";
-      console.error(`[/api/generate][${requestId}] structured generation failed: ${message}`);
+      console.error(`[/api/generate][${requestId}] ${phase} structured generation failed: ${message}`);
     }
     return { quest: null, raw: "" };
   }
@@ -317,11 +368,11 @@ function hashToIndex(value: string, modulo: number): number {
   return hash % modulo;
 }
 
-function responseHeaders(requestId: string): HeadersInit {
-  return {
-    "Cache-Control": "no-store",
-    "X-Request-Id": requestId,
-  };
+function responseHeaders(requestId: string): Headers {
+  const headers = new Headers();
+  headers.set("Cache-Control", "no-store");
+  headers.set("X-Request-Id", requestId);
+  return headers;
 }
 
 function extractTextFromOutput(output: unknown[]): string {

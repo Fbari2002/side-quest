@@ -92,6 +92,7 @@ export default function QuestPage() {
 
       const data = (await response.json()) as Quest | { error?: string };
       const requestId = response.headers.get("x-request-id");
+      const generationPath = response.headers.get("x-generation-path");
 
       if (!response.ok || !("title" in data)) {
         const err = "error" in data ? data.error : undefined;
@@ -100,7 +101,9 @@ export default function QuestPage() {
 
       setQuest(data);
       if (process.env.NODE_ENV !== "production") {
-        console.info(`[quest] response ${requestId ?? "n/a"} title: ${data.title}`);
+        console.info(
+          `[quest] response ${requestId ?? "n/a"} path=${generationPath ?? "n/a"} title: ${data.title}`,
+        );
       }
       showToast("Quest ready ✨");
     } catch (err) {
