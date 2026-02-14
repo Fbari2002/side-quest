@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SideQuest v1
 
-## Getting Started
+Mobile-first "Main Character Mode" app for wholesome, mysterious micro-adventures.
 
-First, run the development server:
+## Tech
+
+- Next.js App Router
+- React + TypeScript
+- OpenAI API (server only)
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create local env file:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Set your key in `.env.local`:
+
+```bash
+OPENAI_API_KEY=your_key_here
+# Optional
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+4. Run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `POST /api/generate`
 
-## Learn More
+Request body:
 
-To learn more about Next.js, take a look at the following resources:
+```json
+{
+  "mood": "curious",
+  "time_available": "45 minutes",
+  "energy": "medium",
+  "social": "solo",
+  "chaos": 4,
+  "noSpend": false,
+  "lowSensory": false
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Response body (strict JSON contract):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+{
+  "title": "",
+  "vibe": "",
+  "steps": ["", "", ""],
+  "twist": "",
+  "completion": "",
+  "soundtrack_query": ""
+}
+```
 
-## Deploy on Vercel
+Reliability: structured output schema, then parse+retry once, then safe fallback quest.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploying to Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Add `OPENAI_API_KEY` in Vercel Project Settings -> Environment Variables.
+- Optionally set `OPENAI_MODEL`.
+- Redeploy after setting env vars.
