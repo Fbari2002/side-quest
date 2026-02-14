@@ -34,6 +34,11 @@ type OfflineQuest = Quest & {
 const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const offlineQuests = offlineQuestCatalog as OfflineQuest[];
 const recentTitles: string[] = [];
+const GENERATION_TIMEOUT_MS = 7_000;
+const API_COOLDOWN_MS = 15 * 60 * 1_000;
+
+let apiDownUntil = 0;
+let lastQuotaErrorAt = 0;
 
 const questSchema = {
   type: "object",
@@ -64,23 +69,26 @@ export async function POST(req: Request) {
     const validationError = validateInput(input);
     if (validationError) {
       headers.set("X-Generation-Path", "validation-error");
+      headers.set("X-Mode", "online");
       return NextResponse.json({ error: validationError }, { status: 400, headers });
     }
 
     if (!process.env.OPENAI_API_KEY) {
       if (process.env.NODE_ENV === "production") {
         headers.set("X-Generation-Path", "missing-key");
+        headers.set("X-Mode", "online");
         return NextResponse.json({ error: "error" }, { status: 500, headers });
       }
 
       const quest = selectOfflineFallback(input, requestId, "missing-api-key");
       rememberTitle(quest.title);
       headers.set("X-Generation-Path", "offline-fallback-missing-key");
+      headers.set("X-Mode", "offline");
       return NextResponse.json(quest, { headers });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const result = await generateQuest(openai, input, requestId);
+    const result = await generateQuestWithCircuitBreaker(openai, input, requestId);
     rememberTitle(result.quest.title);
 
     if (isDev) {
@@ -88,8 +96,10 @@ export async function POST(req: Request) {
     }
 
     headers.set("X-Generation-Path", result.path);
+    headers.set("X-Mode", result.mode);
     return NextResponse.json(result.quest, { headers });
   } catch {
+    headers.set("X-Mode", "online");
     return NextResponse.json({ error: "Invalid request." }, { status: 400, headers });
   }
 }
@@ -106,19 +116,78 @@ function validateInput(input: GenerateInput): string | null {
   return null;
 }
 
-async function generateQuest(
+async function generateQuestWithCircuitBreaker(
+  openai: OpenAI,
+  input: GenerateInput,
+  requestId: string,
+): Promise<{ quest: Quest; path: string; mode: "offline" | "online" }> {
+  if (Date.now() < apiDownUntil) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[circuit-breaker] offline until ${new Date(apiDownUntil).toISOString()}`);
+    }
+    return {
+      quest: selectOfflineFallback(input, requestId, "circuit-breaker-open"),
+      path: "circuit-breaker-open",
+      mode: "offline",
+    };
+  }
+
+  try {
+    const timedResult = await withTimeout(
+      generateQuestOnline(openai, input, requestId),
+      GENERATION_TIMEOUT_MS,
+    );
+
+    if (timedResult.path === "fallback") {
+      return { ...timedResult, mode: "offline" };
+    }
+
+    return { ...timedResult, mode: "online" };
+  } catch (error) {
+    if (isQuotaOrRateError(error)) {
+      lastQuotaErrorAt = Date.now();
+      apiDownUntil = lastQuotaErrorAt + API_COOLDOWN_MS;
+
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          `[circuit-breaker] offline until ${new Date(apiDownUntil).toISOString()} after quota/rate-limit at ${new Date(lastQuotaErrorAt).toISOString()}`,
+        );
+      }
+
+      return {
+        quest: selectOfflineFallback(input, requestId, "quota-or-rate-limit"),
+        path: "quota-or-rate-limit",
+        mode: "offline",
+      };
+    }
+
+    if (isTimeoutError(error)) {
+      return {
+        quest: selectOfflineFallback(input, requestId, "openai-timeout"),
+        path: "openai-timeout",
+        mode: "offline",
+      };
+    }
+
+    return {
+      quest: selectOfflineFallback(input, requestId, "openai-request-failed"),
+      path: "openai-request-failed",
+      mode: "offline",
+    };
+  }
+}
+
+async function generateQuestOnline(
   openai: OpenAI,
   input: GenerateInput,
   requestId: string,
 ): Promise<{ quest: Quest; path: "primary" | "repair" | "fallback" }> {
-  const firstAttempt = await createStructuredQuest(
-    openai,
-    generationPrompt(input, requestId),
-    requestId,
-    "primary",
-  );
+  const firstAttempt = await createStructuredQuest(openai, generationPrompt(input), requestId, "primary");
   if (firstAttempt.quest) {
     return { quest: firstAttempt.quest, path: "primary" };
+  }
+  if (firstAttempt.error) {
+    throw firstAttempt.error;
   }
 
   const secondAttempt = await createStructuredQuest(
@@ -129,6 +198,9 @@ async function generateQuest(
   );
   if (secondAttempt.quest) {
     return { quest: secondAttempt.quest, path: "repair" };
+  }
+  if (secondAttempt.error) {
+    throw secondAttempt.error;
   }
 
   return {
@@ -142,13 +214,14 @@ async function createStructuredQuest(
   prompt: string,
   requestId: string,
   phase: "primary" | "repair",
-): Promise<{ quest: Quest | null; raw: string }> {
+): Promise<{ quest: Quest | null; raw: string; error?: unknown }> {
   const isDev = process.env.NODE_ENV !== "production";
 
   try {
     const response = await openai.responses.create({
       model,
       temperature: 0.8,
+      max_output_tokens: 220,
       text: {
         format: {
           type: "json_schema",
@@ -180,25 +253,14 @@ async function createStructuredQuest(
       const message = error instanceof Error ? error.message : "Unknown OpenAI error";
       console.warn(`[/api/generate][${requestId}] ${phase} failed; falling back. ${message}`);
     }
-    return { quest: null, raw: "" };
+    return { quest: null, raw: "", error };
   }
 }
 
-function generationPrompt(input: GenerateInput, requestId: string): string {
-  return `Generate one SideQuest in strict JSON.
-
-Rules:
-- Exactly 3 steps, each under 20 words
-- Respect time_available and energy
-- If social is "solo", no required interactions
-- If noSpend is true, no paid suggestions
-- If lowSensory is true, avoid crowds, loud/bright places, intense social
-- Safe and legal only
-- Lightly address user as "Main Character" without cringe
-- Use this variation token to diversify phrasing: ${requestId}
-
-Input:
-${JSON.stringify(input)}`;
+function generationPrompt(input: GenerateInput): string {
+  return `Generate one SideQuest JSON.
+Rules: 3 steps only; each under 20 words; safe/legal; match time_available and energy; if social=solo require no interaction; if noSpend=true avoid paid suggestions; if lowSensory=true avoid crowds/loud/bright/intense social; lightly use "Main Character".
+Input: ${JSON.stringify(input)}`;
 }
 
 function repairPrompt(badOutput: string): string {
@@ -268,7 +330,14 @@ function selectOfflineFallback(input: GenerateInput, requestId: string, reason: 
     selected = selectOfflineQuest(offlineQuests, input) as OfflineQuest;
   }
 
-  const { fallback_for: _fallback, ...questData } = selected;
+  const questData: Partial<Quest> = {
+    title: selected.title,
+    vibe: selected.vibe,
+    steps: selected.steps,
+    twist: selected.twist,
+    completion: selected.completion,
+    soundtrack_query: selected.soundtrack_query,
+  };
   const normalized = normalizeQuest(questData);
   const quest = normalized || emergencyFallback(input);
 
@@ -319,6 +388,49 @@ function responseHeaders(requestId: string): Headers {
   headers.set("Cache-Control", "no-store");
   headers.set("X-Request-Id", requestId);
   return headers;
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutRef: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutRef = setTimeout(() => reject(new Error("OPENAI_TIMEOUT")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutRef) {
+      clearTimeout(timeoutRef);
+    }
+  }
+}
+
+function isTimeoutError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.message === "OPENAI_TIMEOUT";
+}
+
+function isQuotaOrRateError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const openaiError = error as {
+    status?: unknown;
+    code?: unknown;
+    error?: { code?: unknown };
+  };
+
+  const status = typeof openaiError.status === "number" ? openaiError.status : null;
+  const topCode = typeof openaiError.code === "string" ? openaiError.code : "";
+  const nestedCode =
+    openaiError.error && typeof openaiError.error.code === "string" ? openaiError.error.code : "";
+  const combined = `${topCode} ${nestedCode}`.toLowerCase();
+
+  return (
+    status === 429 ||
+    combined.includes("insufficient_quota") ||
+    combined.includes("rate_limit")
+  );
 }
 
 function extractTextFromOutput(output: unknown[]): string {

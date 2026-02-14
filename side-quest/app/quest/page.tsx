@@ -38,34 +38,18 @@ const initialForm: FormState = {
 export default function QuestPage() {
   const [form, setForm] = React.useState<FormState>(initialForm);
   const [quest, setQuest] = React.useState<Quest | null>(null);
+  const [generationMode, setGenerationMode] = React.useState<"online" | "offline" | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [isRemixing, setIsRemixing] = React.useState(false);
   const [showOnboarding, setShowOnboarding] = React.useState(true);
   const [questVersion, setQuestVersion] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
-  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const { toastMessage, showToast } = useToast(2500);
   const moodInputRef = React.useRef<HTMLInputElement | null>(null);
-  const toastTimerRef = React.useRef<number | null>(null);
 
   const announceText = loading
     ? "Activating Main Character Mode."
     : error || toastMessage || (quest ? "Quest ready." : "");
-
-  React.useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) {
-        window.clearTimeout(toastTimerRef.current);
-      }
-    };
-  }, []);
-
-  function showToast(message: string) {
-    if (toastTimerRef.current) {
-      window.clearTimeout(toastTimerRef.current);
-    }
-    setToastMessage(message);
-    toastTimerRef.current = window.setTimeout(() => setToastMessage(null), 2200);
-  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -97,6 +81,7 @@ export default function QuestPage() {
       const data = (await response.json()) as Quest | { error?: string };
       const requestId = response.headers.get("x-request-id");
       const generationPath = response.headers.get("x-generation-path");
+      const responseMode = response.headers.get("x-mode") === "offline" ? "offline" : "online";
 
       if (!response.ok || !("title" in data)) {
         const err = "error" in data ? data.error : undefined;
@@ -104,6 +89,7 @@ export default function QuestPage() {
       }
 
       setQuest(data);
+      setGenerationMode(responseMode);
       setQuestVersion((value) => value + 1);
       if (showOnboarding) setShowOnboarding(false);
       if (process.env.NODE_ENV !== "production") {
@@ -111,7 +97,7 @@ export default function QuestPage() {
           `[quest] response ${requestId ?? "n/a"} path=${generationPath ?? "n/a"} title: ${data.title}`,
         );
       }
-      showToast("Quest ready ✨");
+      showToast(responseMode === "offline" ? "Quest ready (offline mode)." : "Quest ready ✨");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong.";
       setError(message);
@@ -133,18 +119,18 @@ export default function QuestPage() {
           text,
           url: window.location.href,
         });
-        showToast("Shared");
+        showToast("Shared successfully.");
         return;
       }
 
       await navigator.clipboard.writeText(text);
-      showToast("Copied to clipboard ✨");
+      showToast("Copied quest to clipboard.");
     } catch {
       try {
         await navigator.clipboard.writeText(text);
-        showToast("Couldn't share — copied instead.");
+        showToast("Share unavailable. Copied instead.");
       } catch {
-        showToast("Could not share right now.");
+        showToast("Share failed. Please try again.");
       }
     }
   }
@@ -263,7 +249,7 @@ export default function QuestPage() {
               disabled={loading}
               className="w-full rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? "Activating Main Character Mode…" : "Generate quest"}
+              {loading ? "Summoning…" : "Generate quest"}
             </button>
           </fieldset>
 
@@ -295,13 +281,22 @@ export default function QuestPage() {
         </form>
       </section>
 
+      {loading && <QuestCardSkeleton />}
+
       {quest && (
         <section
           key={questVersion}
           aria-live="polite"
           className="main-card result-reveal rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
         >
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
+            {generationMode === "offline" && (
+              <span className="inline-flex rounded-full border border-[var(--line)] bg-[#101729] px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-[var(--muted)]">
+                Offline mode
+              </span>
+            )}
+          </div>
           <h2 className="mt-2 text-2xl font-semibold leading-tight">{quest.title}</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">{quest.vibe}</p>
 
@@ -340,6 +335,7 @@ export default function QuestPage() {
               disabled={loading}
               className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--warm)]"
             >
+              <ShareIcon />
               Share quest
             </button>
           </div>
@@ -357,14 +353,91 @@ export default function QuestPage() {
         </button>
       )}
 
-      {toastMessage && (
-        <div className="pointer-events-none fixed bottom-4 left-1/2 z-20 w-[min(92vw,24rem)] -translate-x-1/2">
-          <div className="rounded-xl border border-[var(--line)] bg-[#0d1426]/95 px-4 py-2 text-center text-sm text-[var(--text)] shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur">
-            {toastMessage}
-          </div>
-        </div>
-      )}
+      <Toast message={toastMessage} />
     </main>
+  );
+}
+
+function useToast(durationMs: number) {
+  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const toastTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showToast = React.useCallback(
+    (message: string) => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+      setToastMessage(message);
+      toastTimerRef.current = window.setTimeout(() => setToastMessage(null), durationMs);
+    },
+    [durationMs],
+  );
+
+  return { toastMessage, showToast };
+}
+
+function Toast({ message }: { message: string | null }) {
+  if (!message) return null;
+
+  return (
+    <div
+      aria-live="polite"
+      role="status"
+      className="pointer-events-none fixed bottom-4 left-1/2 z-20 w-[min(92vw,24rem)] -translate-x-1/2"
+    >
+      <div className="rounded-xl border border-[var(--line)] bg-[#0d1426]/95 px-4 py-2 text-center text-sm text-[var(--text)] shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur">
+        {message}
+      </div>
+    </div>
+  );
+}
+
+function QuestCardSkeleton() {
+  return (
+    <section
+      aria-hidden="true"
+      className="main-card rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+    >
+      <div className="h-3 w-20 animate-pulse rounded bg-[#1c2744]" />
+      <div className="mt-3 h-8 w-4/5 animate-pulse rounded bg-[#1a2340]" />
+      <div className="mt-3 h-4 w-3/5 animate-pulse rounded bg-[#1a2340]" />
+      <div className="mt-5 space-y-2">
+        <div className="h-4 w-full animate-pulse rounded bg-[#15203a]" />
+        <div className="h-4 w-11/12 animate-pulse rounded bg-[#15203a]" />
+        <div className="h-4 w-10/12 animate-pulse rounded bg-[#15203a]" />
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="h-11 animate-pulse rounded-2xl bg-[#111a2f]" />
+        <div className="h-11 animate-pulse rounded-2xl bg-[#111a2f]" />
+      </div>
+    </section>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 12v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-6" />
+      <path d="m12 16 0-12" />
+      <path d="m8.5 7.5 3.5-3.5 3.5 3.5" />
+    </svg>
   );
 }
 
