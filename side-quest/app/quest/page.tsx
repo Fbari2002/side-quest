@@ -155,15 +155,27 @@ export default function QuestPage() {
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
         {showOnboarding && (
-          <p className="mt-2 rounded-2xl border border-[var(--line)] bg-[#0d1426]/70 px-3 py-2 text-sm text-[var(--text)]">
-            Tell us how you&apos;re feeling - we&apos;ll tailor a micro-adventure for you.
+          <p className="mt-2 inline-flex max-w-[36ch] items-center gap-2 text-xs text-[var(--muted)] sm:text-sm">
+            <span
+              aria-hidden="true"
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[var(--warm)] shadow-[0_0_10px_rgba(246,196,83,0.35)] animate-[pulse_2.8s_ease-in-out_infinite] motion-reduce:animate-none"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              >
+                <path d="M12 2.5 14 8l5.5 2-5.5 2-2 5.5-2-5.5-5.5-2L10 8l2-5.5Z" />
+              </svg>
+            </span>
+            <span>Tell us how you&apos;re feeling - we&apos;ll tailor a micro-adventure for you.</span>
           </p>
         )}
         <p aria-live="polite" className="sr-only">
           {announceText}
         </p>
 
-        <form className="mt-5" onSubmit={onSubmit}>
+        <form className={showOnboarding ? "mt-3" : "mt-5"} onSubmit={onSubmit}>
           <fieldset disabled={loading} className="space-y-4 disabled:cursor-not-allowed disabled:opacity-80">
             <Labeled label="Mood">
               <input
