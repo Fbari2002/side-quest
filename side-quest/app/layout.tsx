@@ -6,18 +6,13 @@ export const metadata: Metadata = {
   description: "Main Character Mode micro-adventures",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/icon.png", sizes: "512x512", type: "image/png" }],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
-  appleWebApp: {
-    title: "SideQuest",
-    capable: true,
-    statusBarStyle: "black-translucent",
+    icon: "/icon.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#05070F",
+  themeColor: "#05070f",
 };
 
 export default function RootLayout({
