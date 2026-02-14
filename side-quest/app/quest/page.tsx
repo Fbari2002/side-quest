@@ -3,7 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
-import { saveQuest, type Energy, type QuestData, type QuestInput, type Social } from "@/lib/savedQuests";
+import {
+  deleteQuest,
+  findSavedIdByQuest,
+  getSaved,
+  saveQuest,
+  type Energy,
+  type QuestData,
+  type QuestInput,
+  type Social,
+} from "@/lib/savedQuests";
 type Quest = QuestData;
 
 type FormState = QuestInput;
@@ -27,6 +36,7 @@ export default function QuestPage() {
   const [showOnboarding, setShowOnboarding] = React.useState(true);
   const [questVersion, setQuestVersion] = React.useState(0);
   const [isQuestSaved, setIsQuestSaved] = React.useState(false);
+  const [savedQuestId, setSavedQuestId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const { toastMessage, showToast } = useToast(2500);
   const moodInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -75,7 +85,9 @@ export default function QuestPage() {
       setQuest(data);
       setGenerationMode(responseMode);
       setQuestVersion((value) => value + 1);
-      setIsQuestSaved(false);
+      const existingId = findSavedIdByQuest(data, getSaved());
+      setIsQuestSaved(Boolean(existingId));
+      setSavedQuestId(existingId);
       if (showOnboarding) setShowOnboarding(false);
       if (process.env.NODE_ENV !== "production") {
         console.info(
@@ -122,8 +134,30 @@ export default function QuestPage() {
 
   function onSaveQuest() {
     if (!quest) return;
+
+    if (isQuestSaved) {
+      const idToDelete = savedQuestId || findSavedIdByQuest(quest, getSaved());
+      if (idToDelete) {
+        deleteQuest(idToDelete);
+      }
+      setSavedQuestId(null);
+      setIsQuestSaved(false);
+      showToast("Removed from History.");
+      return;
+    }
+
     const result = saveQuest({ quest, input: form });
-    setIsQuestSaved(true);
+
+    if (result.saved && result.entry) {
+      setSavedQuestId(result.entry.id);
+      setIsQuestSaved(true);
+      showToast("Saved to History ✨");
+      return;
+    }
+
+    const existingId = findSavedIdByQuest(quest, getSaved());
+    setSavedQuestId(existingId);
+    setIsQuestSaved(Boolean(existingId));
     showToast(result.saved ? "Saved to History ✨" : "Already saved");
   }
 
@@ -362,7 +396,7 @@ export default function QuestPage() {
             className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
           >
             {isQuestSaved ? <CheckIcon /> : <SaveIcon />}
-            {isQuestSaved ? "Saved" : "Save"}
+            {isQuestSaved ? "Unsave" : "Save"}
           </button>
         </section>
       )}

@@ -94,6 +94,20 @@ export function isDuplicate(entry: SaveInput, existing: SavedQuestEntry[]): bool
   });
 }
 
+export function findSavedIdByQuest(
+  quest: QuestData,
+  existing: SavedQuestEntry[] = getSaved(),
+): string | null {
+  const title = normalize(quest.title);
+  const steps = normalizeSteps(quest.steps);
+
+  const match = existing.find((item) => {
+    return normalize(item.quest.title) === title && normalizeSteps(item.quest.steps) === steps;
+  });
+
+  return match?.id ?? null;
+}
+
 function normalize(value: string): string {
   return value.trim().toLowerCase();
 }
