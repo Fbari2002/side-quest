@@ -51,42 +51,53 @@ Rules:
 ## Tech preference (for Codex)
 Next.js app router. Do not expose API keys client-side.
 
-## Visual Direction — Animated Abstract Night Canvas (FINAL)
+## Visual Direction — Ratatouille Flavour Fireworks (FINAL)
 
 Emotional goal:
-Dark, playful, alive.
-Abstract motion in the background (like aurora/fluid fields) with pops of saturated colour.
-Not distinct icon-like shapes. More texture + movement.
-Premium, not noisy. The UI card stays the focus.
+Dark night canvas with colourful flavour bursts.
+Energetic. Playful. Juicy. Hyper-brain popping.
+Still premium and abstract — not cartoony, not childish.
 
-### Background (key)
+Think:
+The food tasting scene in Ratatouille.
+Colour fireworks against black.
+Saturated pops.
+Alive.
 
-- Base is deep near-black/navy (#05070F to #0B1020).
-- Use layered abstract gradients (radial + conic) to create “colour fields”.
-- Add subtle animation: slow drift/rotation over 20–40s loops.
-- Use pops of saturated colour in the fields:
-  Teal (#2DD4BF), Indigo (#4F46E5), Coral (#FB7185), Gold (#F6C453)
-- Add very subtle grain/noise overlay for depth.
-- Add a soft vignette so edges are darker and the card area feels framed.
+### Background
 
-### Card
+- Base: deep near-black/navy (#05070F → #0B1020).
+- Add tight, saturated colour bursts (radial gradients).
+- Bursts must feel like pops, not fog.
+- Use smaller radii (35–50%) and higher opacity:
+  Teal/Indigo: 0.30–0.42
+  Coral/Gold: 0.18–0.28
+- Place bursts around edges/corners, not centered.
 
-- Dark glassy surface:
-  rgba(16, 22, 40, 0.70)
-- blur: 14px
-- border: 1px solid rgba(255,255,255,0.10)
-- Minimal glow; background should provide the “playful energy”.
+### Spark Layer
 
-### Motion constraints
+- Add micro abstract sparkle/confetti layer.
+- Tiny radial gradients (2–6px) with blur.
+- Opacity: 0.10–0.18.
+- Use mix-blend-mode: screen (with safe fallback).
+- Animate gentle drift (20–30s).
 
-- Animation must be subtle (no distracting movement).
-- No heavy libraries required. Prefer CSS animations.
-- Keep performance mobile-friendly.
+### Card Focal Glow
 
-### Strict rules
+- Add a soft warm glow behind the card.
+- Very subtle (0.10–0.16 opacity).
+- Makes the UI feel like it sits inside the flavour field.
 
-- Do not use light/pastel page background.
-- Do not add distinct cartoony shapes.
-- The background should feel like animated abstract colour energy on a dark canvas.
-- Layout stays unchanged.
+### Motion
+
+- Gentle drift only.
+- Energy comes from contrast + saturation, not speed.
+- Respect prefers-reduced-motion.
+
+### Strict Rules
+
+- No pastel/light backgrounds.
+- No distinct cartoon shapes.
+- No overly smooth gradient wash.
+- Background should feel alive and colourful.
 
