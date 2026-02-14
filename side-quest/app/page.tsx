@@ -22,11 +22,7 @@ export default function LandingPage() {
         </div>
 
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-          Tiny, mood-matched side quests.
-          <br />
-          Calm when you need calm.
-          <br />
-          Chaos when you need chaos.
+          Tiny, mood-matched side quests. Calm when you need calm. Chaos when you need chaos.
         </p>
         <p className="mt-2 text-xs text-[var(--muted)]">No pressure. Just playful momentum.</p>
 
