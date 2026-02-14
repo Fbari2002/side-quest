@@ -43,6 +43,12 @@ export default function LandingPage() {
           <span className="pointer-events-none absolute inset-y-0 -left-[36%] w-[34%] -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 transition duration-700 group-hover:translate-x-[420%] group-hover:opacity-100" />
           <span className="relative z-10">Start a SideQuest</span>
         </Link>
+        <Link
+          href="/history"
+          className="mt-3 inline-flex text-xs text-[var(--muted)] transition hover:text-[var(--text)]"
+        >
+          Saved quests
+        </Link>
       </section>
 
       <section className="main-card rounded-3xl p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">

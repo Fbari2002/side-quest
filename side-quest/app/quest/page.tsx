@@ -2,28 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { formatQuestForShare, safeLine } from "@/lib/questShare";
+import { saveQuest, type Energy, type QuestData, type QuestInput, type Social } from "@/lib/savedQuests";
+type Quest = QuestData;
 
-type Energy = "low" | "medium" | "high";
-type Social = "solo" | "social";
-
-type Quest = {
-  title: string;
-  vibe: string;
-  steps: [string, string, string] | string[];
-  twist: string;
-  completion: string;
-  soundtrack_query: string;
-};
-
-type FormState = {
-  mood: string;
-  time_available: string;
-  energy: Energy;
-  social: Social;
-  chaos: number;
-  noSpend: boolean;
-  lowSensory: boolean;
-};
+type FormState = QuestInput;
 
 const initialForm: FormState = {
   mood: "curious",
@@ -135,18 +118,33 @@ export default function QuestPage() {
     }
   }
 
+  function onSaveQuest() {
+    if (!quest) return;
+    const result = saveQuest({ quest, input: form });
+    showToast(result.saved ? "Saved to History ✨" : "Already saved");
+  }
+
   const spotifyUrl = quest
     ? `https://open.spotify.com/search/${encodeURIComponent(quest.soundtrack_query)}`
     : "";
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
-      <Link
-        href="/"
-        className="inline-flex w-fit items-center text-sm text-[var(--muted)] transition hover:text-[var(--text)]"
-      >
-        ← Back
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="inline-flex w-fit items-center text-sm text-[var(--muted)] transition hover:text-[var(--text)]"
+        >
+          ← Back
+        </Link>
+        <Link
+          href="/history"
+          aria-label="Open saved quest history"
+          className="inline-flex items-center rounded-full border border-[var(--line)] bg-[#0f162a] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--text)]"
+        >
+          History
+        </Link>
+      </div>
 
       <section className="main-card rounded-3xl p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
@@ -338,6 +336,7 @@ export default function QuestPage() {
                 showToast("Opening Spotify…");
               }}
               aria-disabled={loading}
+              aria-label="Open quest soundtrack in Spotify"
             >
               🎧 Play the vibe
             </a>
@@ -345,12 +344,22 @@ export default function QuestPage() {
               type="button"
               onClick={onShareQuest}
               disabled={loading}
+              aria-label="Share this quest"
               className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--warm)]"
             >
               <ShareIcon />
               Share quest
             </button>
           </div>
+          <button
+            type="button"
+            onClick={onSaveQuest}
+            disabled={loading}
+            aria-label="Save this quest to history"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
+          >
+            Save
+          </button>
         </section>
       )}
 
@@ -359,6 +368,7 @@ export default function QuestPage() {
           type="button"
           onClick={() => submitQuest("remix")}
           disabled={loading}
+          aria-label="Remix this quest"
           className="main-card rounded-2xl px-4 py-3 text-sm font-semibold transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isRemixing ? "Remixing..." : "🔄 Remix"}
@@ -475,39 +485,4 @@ function Info({ label, value }: { label: string; value: string }) {
       <p className="mt-1">{value}</p>
     </div>
   );
-}
-
-function formatQuestForShare(quest: Partial<Quest>): string {
-  const title = safeLine(quest.title, "Untitled Quest");
-  const vibe = safeLine(quest.vibe, "Mysterious");
-  const twist = safeLine(quest.twist, "A tiny surprise appears.");
-  const completion = safeLine(quest.completion, "When you feel complete, mark it done.");
-  const soundtrackQuery = safeLine(quest.soundtrack_query, "cinematic cozy mystery lofi");
-
-  const rawSteps = Array.isArray(quest.steps) ? quest.steps : [];
-  const steps = rawSteps
-    .map((step) => safeLine(step, ""))
-    .filter(Boolean)
-    .slice(0, 3);
-
-  while (steps.length < 3) {
-    steps.push("Take one small mindful action.");
-  }
-
-  return [
-    `SideQuest: ${title}`,
-    `Vibe: ${vibe}`,
-    `1) ${steps[0]}`,
-    `2) ${steps[1]}`,
-    `3) ${steps[2]}`,
-    `Plot twist: ${twist}`,
-    `To complete: ${completion}`,
-    `🎧 https://open.spotify.com/search/${encodeURIComponent(soundtrackQuery)}`,
-  ].join("\n");
-}
-
-function safeLine(value: unknown, fallback: string): string {
-  if (typeof value !== "string") return fallback;
-  const cleaned = value.trim();
-  return cleaned || fallback;
 }
