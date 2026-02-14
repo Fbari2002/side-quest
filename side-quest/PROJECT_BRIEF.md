@@ -96,3 +96,41 @@ Design intent:
 Background remains dark but infused with colour.
 CTA uses warm gradient.
 Avoid cold blue-only look.
+
+## Visual Direction v3 — Dark Portal + Colour Splashes
+
+Core feeling:
+Dark night-mode base with playful neon colour splashes.
+Not pastel.
+Not light.
+Not SaaS dashboard.
+
+Background:
+- Deep navy / charcoal base.
+- Subtle blurred radial colour glows layered on top.
+- Colours feel like light leaks or paint in water.
+- Colour should feel playful but controlled.
+
+Colour accents:
+- Teal (#2DD4BF)
+- Indigo (#4F46E5)
+- Coral (#FB7185)
+- Gold (#F6C453)
+
+UI Surfaces:
+- Dark glassy cards (semi-transparent).
+- Subtle blur (glassmorphism).
+- Soft border glow (very faint).
+
+CTA:
+- Warm, vibrant gradient.
+- Feels magical, not corporate.
+
+Overall:
+Alive.
+Playful.
+Night-time main character energy.
+Not edgy.
+Not moody.
+Not pastel.
+
