@@ -393,10 +393,14 @@ export default function QuestPage() {
             onClick={onSaveQuest}
             disabled={loading}
             aria-label="Save this quest to history"
-            className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
+            className={`mt-3 inline-flex w-full items-center justify-center rounded-2xl border bg-[#0c1221] px-4 py-3 text-sm font-medium transition disabled:opacity-70 ${
+              isQuestSaved
+                ? "border-[var(--line)] hover:border-rose-400 hover:text-rose-200"
+                : "border-[var(--line)] hover:border-[var(--accent-2)]"
+            }`}
           >
-            {isQuestSaved ? <UnsaveIcon /> : <SaveIcon />}
-            {isQuestSaved ? "Unsave" : "Save"}
+            {isQuestSaved ? <DeleteIcon /> : <SaveIcon />}
+            {isQuestSaved ? "Remove from History" : "Save to History"}
           </button>
         </section>
       )}
@@ -520,7 +524,7 @@ function SaveIcon() {
   );
 }
 
-function UnsaveIcon() {
+function DeleteIcon() {
   return (
     <svg
       aria-hidden="true"
@@ -532,10 +536,10 @@ function UnsaveIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M6 3h9l3 3v15H6z" />
-      <path d="M9 3v6h6V3" />
-      <path d="m9 15 6 6" />
-      <path d="m15 15-6 6" />
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6M14 11v6" />
     </svg>
   );
 }
