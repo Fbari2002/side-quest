@@ -76,3 +76,10 @@ Reliability: structured output schema, then parse+retry once, then safe fallback
 - Add `OPENAI_API_KEY` in Vercel Project Settings -> Environment Variables.
 - Optionally set `OPENAI_MODEL`.
 - Redeploy after setting env vars.
+
+## iOS icon refresh note
+
+iOS aggressively caches Home Screen icons. If updates do not appear:
+1. Remove the existing SideQuest Home Screen shortcut.
+2. Close Safari.
+3. Open SideQuest again in Safari and add to Home Screen.
