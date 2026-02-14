@@ -26,6 +26,7 @@ export default function QuestPage() {
   const [isRemixing, setIsRemixing] = React.useState(false);
   const [showOnboarding, setShowOnboarding] = React.useState(true);
   const [questVersion, setQuestVersion] = React.useState(0);
+  const [isQuestSaved, setIsQuestSaved] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { toastMessage, showToast } = useToast(2500);
   const moodInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -74,6 +75,7 @@ export default function QuestPage() {
       setQuest(data);
       setGenerationMode(responseMode);
       setQuestVersion((value) => value + 1);
+      setIsQuestSaved(false);
       if (showOnboarding) setShowOnboarding(false);
       if (process.env.NODE_ENV !== "production") {
         console.info(
@@ -121,6 +123,7 @@ export default function QuestPage() {
   function onSaveQuest() {
     if (!quest) return;
     const result = saveQuest({ quest, input: form });
+    setIsQuestSaved(true);
     showToast(result.saved ? "Saved to History ✨" : "Already saved");
   }
 
@@ -358,7 +361,8 @@ export default function QuestPage() {
             aria-label="Save this quest to history"
             className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
           >
-            Save
+            {isQuestSaved ? <CheckIcon /> : <SaveIcon />}
+            {isQuestSaved ? "Saved" : "Save"}
           </button>
         </section>
       )}
@@ -459,6 +463,42 @@ function ShareIcon() {
       <path d="M7 12v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-6" />
       <path d="m12 16 0-12" />
       <path d="m8.5 7.5 3.5-3.5 3.5 3.5" />
+    </svg>
+  );
+}
+
+function SaveIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 3h9l3 3v15H6z" />
+      <path d="M9 3v6h6V3" />
+      <path d="M9 17h6" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m5 12 4 4 10-10" />
     </svg>
   );
 }

@@ -91,6 +91,7 @@ export default function HistoryPage() {
                   aria-label={`View saved quest ${entry.quest.title}`}
                   className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium transition hover:border-[var(--accent)]"
                 >
+                  <ViewIcon />
                   View
                 </Link>
                 <button
@@ -99,6 +100,7 @@ export default function HistoryPage() {
                   onClick={() => onDelete(entry.id)}
                   className="inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium transition hover:border-rose-400"
                 >
+                  <DeleteIcon />
                   Delete
                 </button>
               </div>
@@ -112,4 +114,42 @@ export default function HistoryPage() {
 
 function formatSavedDate(savedAt: number): string {
   return new Date(savedAt).toLocaleString();
+}
+
+function ViewIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function DeleteIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
 }

@@ -45,8 +45,22 @@ export default function LandingPage() {
         </Link>
         <Link
           href="/history"
-          className="mt-3 inline-flex text-xs text-[var(--muted)] transition hover:text-[var(--text)]"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition hover:border-[var(--accent)]"
         >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="mr-2 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 3h9l3 3v15H6z" />
+            <path d="M9 3v6h6V3" />
+            <path d="M9 17h6" />
+          </svg>
           Saved quests
         </Link>
       </section>
