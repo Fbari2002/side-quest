@@ -51,86 +51,42 @@ Rules:
 ## Tech preference (for Codex)
 Next.js app router. Do not expose API keys client-side.
 
-## Updated Visual Direction (Iteration 2)
+## Visual Direction — Animated Abstract Night Canvas (FINAL)
 
-Tone shift:
-Less dark/edgy SaaS.
-More alive, colourful, warm.
+Emotional goal:
+Dark, playful, alive.
+Abstract motion in the background (like aurora/fluid fields) with pops of saturated colour.
+Not distinct icon-like shapes. More texture + movement.
+Premium, not noisy. The UI card stays the focus.
 
-Background:
-- Dark navy base with subtle gradient glow.
-- Hints of indigo, teal, or soft purple.
-- Optional soft animated gradient movement.
+### Background (key)
 
-UI:
-- Rounded soft components.
-- Subtle glassmorphism or soft glow edges.
-- Avoid harsh borders.
+- Base is deep near-black/navy (#05070F to #0B1020).
+- Use layered abstract gradients (radial + conic) to create “colour fields”.
+- Add subtle animation: slow drift/rotation over 20–40s loops.
+- Use pops of saturated colour in the fields:
+  Teal (#2DD4BF), Indigo (#4F46E5), Coral (#FB7185), Gold (#F6C453)
+- Add very subtle grain/noise overlay for depth.
+- Add a soft vignette so edges are darker and the card area feels framed.
 
-Primary CTA:
-- Warm gradient (gold / coral / soft purple blend).
-- Should feel magical but refined.
+### Card
 
-Overall feel:
-Premium.
-Playful.
-Curious.
-Alive.
-Not corporate.
-Not edgy tech.
+- Dark glassy surface:
+  rgba(16, 22, 40, 0.70)
+- blur: 14px
+- border: 1px solid rgba(255,255,255,0.10)
+- Minimal glow; background should provide the “playful energy”.
 
-## Colour Palette v2
+### Motion constraints
 
-Base:
-- #0B1020 (deep navy)
+- Animation must be subtle (no distracting movement).
+- No heavy libraries required. Prefer CSS animations.
+- Keep performance mobile-friendly.
 
-Accent glows:
-- Indigo (#4F46E5)
-- Teal (#2DD4BF)
+### Strict rules
 
-Warm highlight:
-- Gold (#F6C453)
-- Soft coral (#FB7185)
-
-Design intent:
-Background remains dark but infused with colour.
-CTA uses warm gradient.
-Avoid cold blue-only look.
-
-## Visual Direction v3 — Dark Portal + Colour Splashes
-
-Core feeling:
-Dark night-mode base with playful neon colour splashes.
-Not pastel.
-Not light.
-Not SaaS dashboard.
-
-Background:
-- Deep navy / charcoal base.
-- Subtle blurred radial colour glows layered on top.
-- Colours feel like light leaks or paint in water.
-- Colour should feel playful but controlled.
-
-Colour accents:
-- Teal (#2DD4BF)
-- Indigo (#4F46E5)
-- Coral (#FB7185)
-- Gold (#F6C453)
-
-UI Surfaces:
-- Dark glassy cards (semi-transparent).
-- Subtle blur (glassmorphism).
-- Soft border glow (very faint).
-
-CTA:
-- Warm, vibrant gradient.
-- Feels magical, not corporate.
-
-Overall:
-Alive.
-Playful.
-Night-time main character energy.
-Not edgy.
-Not moody.
-Not pastel.
+- Do not use light/pastel page background.
+- Do not add distinct cartoony shapes.
+- The background should feel like animated abstract colour energy on a dark canvas.
+- Layout stays unchanged.
 
