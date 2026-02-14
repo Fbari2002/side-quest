@@ -34,8 +34,6 @@ const questSchema = {
     vibe: { type: "string" },
     steps: {
       type: "array",
-      minItems: 1,
-      maxItems: 3,
       items: { type: "string" },
     },
     twist: { type: "string" },
@@ -110,12 +108,17 @@ async function generateQuest(
   input: GenerateInput,
   requestId: string,
 ): Promise<{ quest: Quest; path: "primary" | "repair" | "fallback" }> {
-  const firstAttempt = await createStructuredQuest(openai, generationPrompt(input, requestId));
+  const firstAttempt = await createStructuredQuest(
+    openai,
+    generationPrompt(input, requestId),
+    requestId,
+  );
   if (firstAttempt.quest) return { quest: firstAttempt.quest, path: "primary" };
 
   const secondAttempt = await createStructuredQuest(
     openai,
     repairPrompt(firstAttempt.raw || "No valid JSON received."),
+    requestId,
   );
   if (secondAttempt.quest) return { quest: secondAttempt.quest, path: "repair" };
 
@@ -125,7 +128,9 @@ async function generateQuest(
 async function createStructuredQuest(
   openai: OpenAI,
   prompt: string,
+  requestId: string,
 ): Promise<{ quest: Quest | null; raw: string }> {
+  const isDev = process.env.NODE_ENV !== "production";
   try {
     const response = await openai.responses.create({
       model,
@@ -148,10 +153,22 @@ async function createStructuredQuest(
       ],
     });
 
-    const raw = (response.output_text || "").trim();
+    const raw =
+      (response.output_text || extractTextFromOutput(response.output as unknown[]) || "").trim();
     const parsed = parseQuest(raw);
+    if (isDev && !parsed) {
+      console.warn(
+        `[/api/generate][${requestId}] parse failed. Raw output: ${
+          raw ? raw.slice(0, 500) : "(empty)"
+        }`,
+      );
+    }
     return { quest: parsed, raw };
-  } catch {
+  } catch (error) {
+    if (isDev) {
+      const message = error instanceof Error ? error.message : "Unknown OpenAI error";
+      console.error(`[/api/generate][${requestId}] structured generation failed: ${message}`);
+    }
     return { quest: null, raw: "" };
   }
 }
@@ -305,4 +322,25 @@ function responseHeaders(requestId: string): HeadersInit {
     "Cache-Control": "no-store",
     "X-Request-Id": requestId,
   };
+}
+
+function extractTextFromOutput(output: unknown[]): string {
+  if (!Array.isArray(output)) return "";
+  const parts: string[] = [];
+
+  for (const item of output) {
+    if (!item || typeof item !== "object") continue;
+    const content = (item as { content?: unknown }).content;
+    if (!Array.isArray(content)) continue;
+
+    for (const part of content) {
+      if (!part || typeof part !== "object") continue;
+      const text = (part as { text?: unknown }).text;
+      if (typeof text === "string" && text.trim()) {
+        parts.push(text);
+      }
+    }
+  }
+
+  return parts.join("\n");
 }
