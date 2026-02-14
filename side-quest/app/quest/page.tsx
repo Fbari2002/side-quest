@@ -5,8 +5,9 @@ import Link from "next/link";
 import GlowButton from "@/components/GlowButton";
 import GlowCard from "@/components/GlowCard";
 import Sparkle from "@/components/Sparkle";
+import { copyText } from "@/lib/copy";
 import { formatQuestForShare, safeLine } from "@/lib/questShare";
-import { openSpotifySearch, spotifyWebSearchUrl } from "@/lib/spotify";
+import { isMobileUA, openSpotifySearch, spotifyWebSearchUrl } from "@/lib/spotify";
 import {
   deleteQuest,
   findSavedIdByQuest,
@@ -41,6 +42,7 @@ export default function QuestPage() {
   const [questVersion, setQuestVersion] = React.useState(0);
   const [isQuestSaved, setIsQuestSaved] = React.useState(false);
   const [savedQuestId, setSavedQuestId] = React.useState<string | null>(null);
+  const [isMoreOpen, setIsMoreOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { toastMessage, showToast } = useToast(2500);
   const moodInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -163,6 +165,15 @@ export default function QuestPage() {
     setSavedQuestId(existingId);
     setIsQuestSaved(Boolean(existingId));
     showToast(result.saved ? "Saved to History ✨" : "Already saved");
+  }
+
+  function openSpotifyInBrowser(url: string) {
+    if (typeof window === "undefined") return;
+    if (isMobileUA()) {
+      window.location.href = url;
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   const spotifyUrl = quest ? spotifyWebSearchUrl(quest.soundtrack_query) : "";
@@ -394,15 +405,26 @@ export default function QuestPage() {
               <ShareIcon />
               Share quest
             </button>
+            <button
+              type="button"
+              onClick={() => submitQuest("remix")}
+              disabled={loading}
+              aria-label="Remix this quest"
+              className="col-span-2 inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent)] disabled:opacity-70"
+            >
+              {isRemixing ? "Remixing…" : "🔄 Remix"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMoreOpen(true)}
+              disabled={loading}
+              aria-label="More soundtrack actions"
+              className="col-span-2 inline-flex items-center justify-center rounded-2xl border border-[var(--line)] bg-[#0c1221] px-4 py-3 text-sm font-medium transition hover:border-[var(--accent-2)] disabled:opacity-70"
+            >
+              <MoreIcon />
+              More
+            </button>
           </div>
-          <a
-            href={spotifyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex text-xs text-[var(--muted)] transition hover:text-[var(--text)]"
-          >
-            Open in browser
-          </a>
           <button
             type="button"
             onClick={onSaveQuest}
@@ -420,16 +442,60 @@ export default function QuestPage() {
         </section>
       )}
 
-      {quest && (
-        <button
-          type="button"
-          onClick={() => submitQuest("remix")}
-          disabled={loading}
-          aria-label="Remix this quest"
-          className="main-card rounded-2xl px-4 py-3 text-sm font-semibold transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-70"
+      {quest && isMoreOpen && (
+        <div
+          className="fixed inset-0 z-30 flex items-end bg-black/40 p-3"
+          onClick={() => setIsMoreOpen(false)}
+          role="presentation"
         >
-          {isRemixing ? "Remixing..." : "🔄 Remix"}
-        </button>
+          <div
+            className="w-full rounded-3xl border border-[var(--line)] bg-[#0d1426] p-3 shadow-[0_16px_36px_rgba(0,0,0,0.44)] transition motion-safe:animate-[resultReveal_220ms_ease-out_both] motion-reduce:animate-none"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="More actions"
+          >
+            <button
+              type="button"
+              className="inline-flex w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition hover:bg-white/5"
+              onClick={() => {
+                openSpotifyInBrowser(spotifyUrl);
+                setIsMoreOpen(false);
+              }}
+            >
+              Open Spotify in browser
+            </button>
+            <button
+              type="button"
+              className="inline-flex w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition hover:bg-white/5"
+              onClick={async () => {
+                const ok = await copyText(quest.soundtrack_query);
+                showToast(ok ? "Copied" : "Could not copy.");
+                setIsMoreOpen(false);
+              }}
+            >
+              Copy soundtrack search
+            </button>
+            <button
+              type="button"
+              className="inline-flex w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition hover:bg-white/5"
+              onClick={async () => {
+                const ok = await copyText(spotifyUrl);
+                showToast(ok ? "Copied" : "Could not copy.");
+                setIsMoreOpen(false);
+              }}
+            >
+              Copy Spotify link
+            </button>
+            <button
+              type="button"
+              className="mt-1 inline-flex w-full justify-center rounded-2xl border border-[var(--line)] px-4 py-3 text-sm text-[var(--muted)] transition hover:text-[var(--text)]"
+              onClick={() => setIsMoreOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       <Toast message={toastMessage} />
@@ -555,6 +621,25 @@ function DeleteIcon() {
       <path d="M8 6V4h8v2" />
       <path d="M19 6l-1 14H6L5 6" />
       <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
     </svg>
   );
 }
