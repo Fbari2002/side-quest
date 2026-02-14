@@ -78,3 +78,21 @@ Curious.
 Alive.
 Not corporate.
 Not edgy tech.
+
+## Colour Palette v2
+
+Base:
+- #0B1020 (deep navy)
+
+Accent glows:
+- Indigo (#4F46E5)
+- Teal (#2DD4BF)
+
+Warm highlight:
+- Gold (#F6C453)
+- Soft coral (#FB7185)
+
+Design intent:
+Background remains dark but infused with colour.
+CTA uses warm gradient.
+Avoid cold blue-only look.
