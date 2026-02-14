@@ -16,7 +16,7 @@ export default function LandingPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
         <div className="mt-2 flex items-start gap-2">
           <Sparkle className="mt-1" />
-          <h1 className="text-[2.15rem] font-semibold leading-[1.12] sm:text-[2.35rem]">
+          <h1 className="flex-1 text-left text-3xl font-semibold tracking-tight leading-[1.12] sm:text-4xl">
             Activate Main Character Mode.
           </h1>
         </div>

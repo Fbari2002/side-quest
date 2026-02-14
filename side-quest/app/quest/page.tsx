@@ -193,13 +193,13 @@ export default function QuestPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
         <div className="mt-2 flex items-center gap-2">
           <Sparkle />
-          <h1 className="text-2xl font-semibold">Main Character Mode</h1>
+          <h1 className="flex-1 text-left text-3xl font-semibold tracking-tight sm:text-4xl">Main Character Mode</h1>
         </div>
         <p className="mt-2 text-sm text-[var(--muted)]">
           Wholesome, mysterious micro-adventures with low overwhelm.
         </p>
         {showOnboarding && (
-          <p className="mt-2 inline-flex max-w-[36ch] items-center gap-2 text-xs text-[var(--muted)] sm:text-sm">
+          <p className="mt-2 flex items-center gap-2 text-xs text-[var(--muted)] sm:text-sm">
             <span
               aria-hidden="true"
               className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[var(--warm)] shadow-[0_0_10px_rgba(246,196,83,0.35)] animate-[pulse_2.8s_ease-in-out_infinite] motion-reduce:animate-none"
