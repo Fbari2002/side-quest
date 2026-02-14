@@ -74,7 +74,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 px-4 py-6 sm:py-10">
-      <section className="rounded-3xl border border-[var(--line)] bg-[var(--card)]/80 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)] backdrop-blur">
+      <section className="main-card rounded-3xl p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SideQuest</p>
         <h1 className="mt-2 text-2xl font-semibold">Main Character Mode</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
@@ -163,7 +163,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] px-4 py-3 font-semibold text-[#081019] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-2xl bg-[linear-gradient(90deg,var(--warm),var(--accent-2),var(--accent))] px-4 py-3 font-semibold text-[#081019] transition duration-300 hover:brightness-105 hover:shadow-[0_0_26px_rgba(246,196,83,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? "Generating..." : "Generate quest"}
           </button>
@@ -173,7 +173,7 @@ export default function Home() {
       </section>
 
       {quest && (
-        <section className="rounded-3xl border border-[var(--line)] bg-[var(--card-soft)]/90 p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+        <section className="main-card rounded-3xl p-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Quest ready</p>
           <h2 className="mt-2 text-xl font-semibold">{quest.title}</h2>
 
@@ -206,7 +206,7 @@ export default function Home() {
 }
 
 const fieldClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)]";
+  "w-full rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_rgba(45,212,191,0.18)]";
 
 const toggleClass =
   "flex items-center gap-2 rounded-2xl border border-[var(--line)] bg-[#0e1425] px-3 py-2";

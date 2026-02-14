@@ -19,7 +19,7 @@ npm install
 2. Create `.env.local` from `.env.example` and set your API key:
 
 ```bash
-cp .env.example .env.local
+cp .env .env.local
 ```
 
 3. Start the dev server:
